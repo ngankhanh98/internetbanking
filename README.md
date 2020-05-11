@@ -1,6 +1,16 @@
 # Internet Banking
 An API to provide basic features for an Internet Banking web app 💸💰
 
+## Table of content
+  - [📦 Installation](#---installation)
+      - [Database mySQL](#database-mysql)
+      - [Source code](#source-code)
+  - [🧪 Testing guidline](#---testing-guidline)
+      - [Postman installing](#postman-installing)
+      - [Import Postman collection](#import-postman-collection)
+      - [Step-by-step test](#step-by-step-test)
+  - [🙏 Acknowledge](#---acknowledge)
+
 ## 📦 Installation
 This repo need [Node.js](https://nodejs.org/en/) and [mySQL](https://www.mysql.com/), do make sure you installed it already.
 
