@@ -9,13 +9,19 @@
 			"name": "customer",
 			"item": [
 				{
-					"name": "all",
+					"name": "detail",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
 					"request": {
 						"method": "GET",
-						"header": [],
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU4OTIxMTM1NiwiZXhwIjoxNTg5MjExOTU2fQ.ze_9NdWpq7tTrl69WgeV8xMriVjJAS5MFgGvur_Z-rE",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n\t\"username\": \"thuyloan\",\n\t\"password\": \"123456789\",\n\t\"fullname\": \"PHUNG THUY LOAN\"\n}",
@@ -37,37 +43,8 @@
 								"customer",
 								""
 							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "add",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n\t\"username\": \"thuyloan\",\n\t\"password\": \"123456789\",\n\t\"fullname\": \"PHUNG THUY LOAN\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
 						},
-						"url": {
-							"raw": "http://localhost:3000/api/customer/add",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"customer",
-								"add"
-							]
-						}
+						"description": "View information of your own "
 					},
 					"response": []
 				},
@@ -75,10 +52,16 @@
 					"name": "update",
 					"request": {
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU4OTIxMTM1NiwiZXhwIjoxNTg5MjExOTU2fQ.ze_9NdWpq7tTrl69WgeV8xMriVjJAS5MFgGvur_Z-rE",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"username\": \"ngankhanh\",\n\t\"password\": \"0987654321\",\n\t\"fullname\": \"NGUYEN NGAN KHANH\"\n}",
+							"raw": "{\n\t\"password\": \"00000\",\n\t\"fullname\": \"NGUYEN NGAN KHANH\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -96,6 +79,72 @@
 								"api",
 								"customer",
 								"update"
+							]
+						},
+						"description": "Update information of your own (password or/and fullname are editable)"
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\r\n    \"username\": \"ngankhanh\",\r\n    \"password\": \"123456\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/auth",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"auth"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "refresh token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU4OTIxMTM0NiwiZXhwIjoxNTg5MjExOTQ2fQ.EN7lnPf1EAbno8MnI2Ovf5FxfeyiegW8Maep9xwtjJQ\",\r\n    \"refreshToken\": \"uFKedUhaGwx0nEZNhWJRf5toEI4H2iQ4aCUSsrBpfs4aTHxd9OR5KoJ5Zeg2q8oyYrZmt9axAuihn4CB\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/auth/refresh",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"auth",
+								"refresh"
 							]
 						}
 					},
