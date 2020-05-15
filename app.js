@@ -26,8 +26,8 @@ function verify(req, res, next) {
   }
 }
 
-app.use("/api/customer", verify, require("./routes/customer.route"));
-// app.use("/api/customer", require("./routes/customer.route"));
+//app.use("/api/customer", verify, require("./routes/customer.route"));
+app.use("/api/customer", require("./routes/customer.route"));
 
 app.use((req, res, next) => {
   res.status(404).send("NOT FOUND");

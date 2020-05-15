@@ -45,7 +45,7 @@ module.exports = {
   },
   updateToken: async (username, refreshToken) => {
     try {
-      await db.del({ username: username }, `customerrefreshTokenExt`);
+      await db.del({ username: username }, `customerrefreshtokenext`);
     } catch (error) {
       throw new createError(402, error.message);
     }
@@ -55,10 +55,10 @@ module.exports = {
       refreshToken: refreshToken,
       rdt: moment().format("YYYY-MM-DD HH:mm:ss"),
     };
-    return await db.add(entity, `customerrefreshTokenExt`);
+    return await db.add(entity, `customerrefreshtokenext`);
   },
   verifyRefreshToken: async (username, refreshToken) => {
-    const sql = `select * from customerrefreshTokenExt where username = "${username}" and refreshToken = "${refreshToken}"`;
+    const sql = `select * from customerrefreshtokenext where username = "${username}" and refreshToken = "${refreshToken}"`;
     const rows = await db.load(sql);
     if (rows.length > 0) return true;
 

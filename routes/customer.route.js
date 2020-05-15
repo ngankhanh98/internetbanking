@@ -21,16 +21,16 @@ router.get("/", async (req, res) => {
 });
 
 // permission: personels only
-// router.post("/add", async (req, res) => {
-//   var result;
-//   try {
-//     result = await customerModel.add(req.body);
-//   } catch (error) {
-//     throw new createError(401, error.message);
-//   }
+router.post("/add", async (req, res) => {
+  var result;
+  try {
+    result = await customerModel.add(req.body);
+  } catch (error) {
+    throw new createError(401, error.message);
+  }
 
-//   res.status(201).json(result);
-// });
+  res.status(201).json(result);
+});
 
 // permission: personels, customers
 router.post("/update", async (req, res) => {
