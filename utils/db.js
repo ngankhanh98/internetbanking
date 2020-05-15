@@ -3,10 +3,10 @@ const { promisify } = require("util");
 
 const pool = mysql.createPool({
   connectionLimit: 100,
-  host: "localhost",
+  host: "ebanking.cj3ogc5subyk.ap-southeast-1.rds.amazonaws.com",
   port: 3306,
-  user: "root",
-  password: "root",
+  user: "admin",
+  password: "20031998",
   database: "ebanking",
 });
 
