@@ -3,7 +3,7 @@ const customerModel = require("../models/customer.model");
 const createError = require("https-error");
 const bcrypt = require("bcryptjs");
 const openpgp = require('openpgp');
-
+const acountModel = require("../models/account.model")
 const router = express.Router();
 // customer login
 const header = "MP bank";
@@ -299,6 +299,18 @@ router.post('/decrypt-message', (req, res) => {
         res.status(500).json(err)
     })
         .catch(err => console.log(err));
+},
+);
+router.post("/testdb", async (req, res) => {
+    
+    try {
+        const data = await acountModel.all();
+        console.log(data);
+        res.json(data);
+    } catch (error) {
+        return error;
+    }
+
 });
 
 
