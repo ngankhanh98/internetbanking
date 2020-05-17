@@ -6,14 +6,14 @@ const moment = require("moment");
 module.exports = {
     all:() => db.load(`select * from partnerbank`),
 
-    getByID: (id_bank) => {
-       return db.load(`select * from partnerbank where id_bank = "${id_bank}"`)
+    getByID: async(id_bank) => {
+       return await db.load(`select * from partnerbank where id_bank = "${id_bank}"`)
     },
-    getByCode: (code_bank) => {
-        return db.load(`select * from partnerbank where code_bank = "${code_bank}"`)
+    getByCode: async (code_bank) => {
+        return await db.load(`select * from partnerbank where code_bank = "${code_bank}"`)
     },
-    getByName: (name_bank) => {
-        return db.load(`select * from partnerbank where name_bank = "${name_bank}"`)
+    getByName: async(name_bank) => {
+        return await db.load(`select * from partnerbank where name_bank = "${name_bank}"`)        
     },
     
     
