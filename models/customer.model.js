@@ -4,9 +4,9 @@ const createError = require("https-error");
 const moment = require("moment");
 
 module.exports = {
-  all: (_) => db.load(`select * from customers`),
+  all: (_) => db.load(`select * from customer`),
   detail: (username) =>
-    db.load(`select * from customers where username = "${username}"`),
+    db.load(`select * from customer where username = "${username}"`),
   add: async (entity) => {
     // table customer {username, password, fullname};
     // entity {username, password, fullname}
@@ -14,13 +14,13 @@ module.exports = {
     entity.password = bcrypt.hashSync(entity.password, 8);
     try {
       const rows = await db.load(
-        `select * from customers where username = "${entity.username}"`
+        `select * from customer where username = "${entity.username}"`
       );
     } catch (error) {
       return error;
     }
 
-    return db.add(entity, `customers`);
+    return db.add(entity, `customer`);
   },
   update: async (entity, username) => {
     // if password
@@ -28,7 +28,7 @@ module.exports = {
     if (password) entity.password = bcrypt.hashSync(password, 8);
 
     try {
-      rows = await db.update(entity, { username: username }, `customers`);
+      rows = await db.update(entity, { username: username }, `customer`);
     } catch (error) {
       return error;
     }
@@ -37,7 +37,7 @@ module.exports = {
   login: async (entity) => {
     // entity {username, password}, orgirinal password
     const row = await db.load(
-      `select * from customers where username = "${entity.username}"`
+      `select * from customer where username = "${entity.username}"`
     );
     const { password } = row[0];
     if (bcrypt.compareSync(entity.password, password)) return row[0];
