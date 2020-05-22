@@ -22,8 +22,6 @@ module.exports = {
     );
   },
   add: async (entity) => {
-    // entity {code_bank, name_bank, secret_key}
-
     entity.secret_key = bcrypt.hashSync(entity.secret_key, 8);
     try {
       const rows = await db.load(
