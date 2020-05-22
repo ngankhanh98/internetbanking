@@ -11,9 +11,9 @@ module.exports = {
       `select * from partnerbank where id_bank = "${id_bank}"`
     );
   },
-  getByCode: async (code_bank) => {
+  getByCode: async (partner_code) => {
     return await db.load(
-      `select * from partnerbank where code_bank = "${code_bank}"`
+      `select * from partnerbank where partner_code = "${partner_code}"`
     );
   },
   getByName: async (name_bank) => {
