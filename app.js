@@ -27,6 +27,12 @@ function verify(req, res, next) {
 }
 
 //app.use("/api/customer", verify, require("./routes/customer.route"));
+const router = express.Router();
+router.get('/', (req, res)=>{
+  res.send('Hello from NKL BANK API');
+})
+
+app.use('/', router);
 app.use("/api/customer", require("./routes/customer.route"));
 
 app.use("/api/account", require("./routes/account.route"));
