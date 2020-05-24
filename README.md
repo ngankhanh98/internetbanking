@@ -22,7 +22,7 @@ $ git clone https://github.com/hhoangluu/internetbanking.git
 $ cd internetbanking
 
 # Checkout branch
-$ git checkout register-login--khanh
+$ git checkout master
 
 # Install essential packages
 $ npm i
@@ -30,7 +30,7 @@ $ npm i
 # Run in localhost
 $ npm start
 ```
-Webservice should be run at your `http://localhost:3000/`
+Webservice should be run at your `http://localhost:3000/`. However, there's a deployment in https://nklbank.herokuapp.com/ already.
 
 
 ## 🧪 Testing guidline
