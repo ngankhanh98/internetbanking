@@ -3,7 +3,6 @@ An API to provide basic features for an Internet Banking web app 💸💰
 
 ## Table of content
   - [📦 Installation](#---installation)
-      - [Database mySQL](#database-mysql)
       - [Source code](#source-code)
   - [🧪 Testing guidline](#---testing-guidline)
       - [Postman installing](#postman-installing)
@@ -13,9 +12,7 @@ An API to provide basic features for an Internet Banking web app 💸💰
 
 ## 📦 Installation
 This repo need [Node.js](https://nodejs.org/en/) and [mySQL](https://www.mysql.com/), do make sure you installed it already.
-
-#### Database mySQL
-Run this script to create the certain database in you localhost: [**ebanking.sql**](https://github.com/hhoangluu/internetbanking/blob/register-login--khanh/ebanking.sql)
+ư
 
 #### Source code
 From your command line (you're supposed to have [git](https://git-scm.com/) already installed in your environment)
@@ -25,7 +22,7 @@ $ git clone https://github.com/hhoangluu/internetbanking.git
 $ cd internetbanking
 
 # Checkout branch
-$ git checkout register-login--khanh
+$ git checkout master
 
 # Install essential packages
 $ npm i
@@ -33,7 +30,7 @@ $ npm i
 # Run in localhost
 $ npm start
 ```
-Webservice should be run at your `http://localhost:3000/`
+Webservice should be run at your `http://localhost:3000/`. However, there's a deployment in https://nklbank.herokuapp.com/ already.
 
 
 ## 🧪 Testing guidline
@@ -42,8 +39,10 @@ Webservice should be run at your `http://localhost:3000/`
 You are to install [Postman](https://www.postman.com/) and get used to the software.
 
 #### Import Postman collection
-All functions supported so far are listed in one Postman collection file. To import it, do follow these steps: hit **File > Import...**, drop file [**ebanking.postman_collection.js**](https://github.com/hhoangluu/internetbanking/blob/register-login--khanh/ebanking.postman_collection.json), and you're good to go.
+All functions supported so far are listed in one Postman collection file. To import it, do follow these steps: hit **File > Import...**, drop file [**internetbanking.postman_collection.json**](https://github.com/hhoangluu/internetbanking/blob/master/internetbanking.postman_collection.json), and you're good to go.
 
+
+# Do not continue to read
 #### Step-by-step test
 After importing, you'll find in tab **Collections** a folder called **ebanking** with the structure:
 ```
