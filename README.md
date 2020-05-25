@@ -88,7 +88,7 @@ const { data, signed_data } = req.body
 1. Check `timestamp` để xem gói tin có quá hạn chưa (quá 2 phút)
 2. Query `secret_key` từ `partner_code` trong cơ sở dữ liệu.
 3. Giải hash bằng `secret_key`, check xem trường `data` có match với `req.body.data` không.
-4. Nếu có `signed_data`, nghĩa là có transaction 💰, cần verify `signed_data`
+4. Nếu có `signed_data`, nghĩa là có transaction 💰, cần verify `signed_data`<br>
     4.1. Lên keyserver.ubuntu.com lookup **publicKey** từ `email` (trao đổi in person trước)<br>
     4.2. Verify bằng **publicKey**<br>
         - Verify hợp lệ, ghi transaction này vào database (tránh từ chối trách nhiệm trong tương lai) > thực hiện transaction (nộp/trừ tiền)<br>
