@@ -4,7 +4,6 @@ const bcrypt = require("bcrypt");
 const openpgp = require('openpgp');
 const config = require('../config/cli.mpbank');
 
-const app = express();
 const router = express.Router();
 
 const pri = config.privateKey;
