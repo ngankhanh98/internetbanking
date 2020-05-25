@@ -496,7 +496,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"data\":{\n\t\t\"account_number\":\"00051027\",\n\t\t\"amount\": 20\n\t}\n}",
+							"raw": "{\n\t\"data\":{\n\t\t\"account_number\":\"00\",\n\t\t\"amount\": 20\n\t}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
