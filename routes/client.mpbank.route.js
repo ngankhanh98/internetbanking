@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const bcrypt = require("bcrypt");
 const openpgp = require('openpgp');
-const config = require('../config/cli.mpbank');
+const config = require('../config/client.mpbank');
 
 const router = express.Router();
 
@@ -11,7 +11,6 @@ const {secret, partnercode, passphrase} = config;
 
 router.get("/:account", (req, res) => {
   let account = req.params.account;
-  console.log(account);
   let timeStamp = Date.now();
   let _secret = secret;
 
@@ -29,8 +28,9 @@ router.get("/:account", (req, res) => {
     },
     headers: headers,
   })
-    .then((res) => {
-      console.log(res.data);
+    .then((response) => {
+      res.status(response.status).send(response.data);
+      console.log(response.data);
     })
     .catch((err) => {
       console.log(err.response);
@@ -66,7 +66,7 @@ router.post("/transaction", async (req, res) => {
     signature: detachedSignature,
   };
 
-  axios({
+  await axios({
     method: "POST",
     url: "https://mpbinternetbanking.herokuapp.com/user/transfer",
     data: data,
