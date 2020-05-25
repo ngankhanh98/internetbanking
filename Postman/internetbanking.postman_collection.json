@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "04240979-2c8e-4e2a-b1cc-6988a0ab0660",
-		"name": "internetbanking | herokuapp",
+		"name": "internetbanking",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -158,7 +158,7 @@
 			"protocolProfileBehavior": {}
 		},
 		{
-			"name": "partnerbank | MPBank",
+			"name": "server.mpbank",
 			"item": [
 				{
 					"name": "add money of NKLBank's account",
@@ -257,6 +257,284 @@
 							"port": "5000",
 							"path": [
 								"request"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "3a806089-4c12-4208-b7f9-91225698c03e",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "d275880c-18cf-435b-8b4e-e8c06dc278fd",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "client.mpbank",
+			"item": [
+				{
+					"name": "query account info",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"account\": \"02410001612496\",\n\t\"money\": 20000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/client/mpbank/02410001612496",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"client",
+								"mpbank",
+								"02410001612496"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "money transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"account\": \"02410001612496\",\n\t\"money\": 20000\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/client/mpbank/transaction",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"client",
+								"mpbank",
+								"transaction"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "server.s2q-ibanking",
+			"item": [
+				{
+					"name": "add money of NKLBank's account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "partner_code",
+								"value": "ccQ8SCo7jaJIsphleBkn",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " { \n\t\t\"transaction_type\": \"+\", \n\t\t\"source_account\": \"3234\", \n\t\t\"target_account\": \"12345\", \n\t\t\"amount_money\": 2001\n }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/request",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "subs money of NKLBank's account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "partner_code",
+								"value": "ccQ8SCo7jaJIsphleBkn",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " { \n\t\t\"transaction_type\": \"-\", \n\t\t\"source_account\": \"3234\", \n\t\t\"target_account\": \"12345\", \n\t\t\"amount_money\": 2001\n }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/request",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "query NKLBank's account info",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "partner_code",
+								"value": "ccQ8SCo7jaJIsphleBkn",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " { \n\t\t\"transaction_type\": \"?\", \n\t\t\"source_account\": \"3234\", \n\t\t\"target_account\": \"12345\", \n\t\t\"amount_money\": 2001\n }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/request",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"request"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "3c2b96f2-4509-47cb-995c-04a532a12597",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "714fb7a2-c4b2-4428-9fb3-158849786b6e",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "client.s2q-ibank",
+			"item": [
+				{
+					"name": "money transaction",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"data\":{\n\t\t\"account_number\":\"00051027\",\n\t\t\"amount\": 20\n\t}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/client/s2pbank/transaction",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"client",
+								"s2pbank",
+								"transaction"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "query account info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/client/s2pbank/00051027",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"client",
+								"s2pbank",
+								"00051027"
 							]
 						}
 					},
