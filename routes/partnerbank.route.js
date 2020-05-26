@@ -27,11 +27,9 @@ router.post("/request", async (req, res) => {
   //   api_signature: hash(data, timestamp, secret_key)
   // }
 
-  console.log(req.body);
   const { data, signed_data } = req.body;
   const { partner_code, timestamp, api_signature } = req.headers;
   const _timestamp = new moment(timestamp);
-
 
   // What should be done:
   // 1. Check headers['timestamp']. All timestamps of n minutes ago are valid
@@ -51,8 +49,8 @@ router.post("/request", async (req, res) => {
 
   // 2. check headers['api_signature']
   var rows = await parnerbankModel.getByCode(partner_code); // get parner's secret_key, email from our database
-  var { secret_key, email } = rows[0];
-  console.log(email);
+  var { secret_key, email, publicKey } = rows[0];
+  console.log(JSON.stringify(publicKey));
   var bytes = CryptoJS.AES.decrypt(api_signature, secret_key);
   var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
@@ -67,17 +65,9 @@ router.post("/request", async (req, res) => {
   // 2.1 If there's signature+data, verify it
   if (signed_data) {
     (async () => {
-      var hkp = new openpgp.HKP(); // Defaults to https://keyserver.ubuntu.com,
-
-      // find public key in keyserver via email
-      let _publicKeyArmored = await hkp.lookup({
-        query: email
-      });
-      console.log(_publicKeyArmored);
-      // verify with public key
       const verified = await openpgp.verify({
         message: await openpgp.cleartext.readArmored(signed_data), // parse armored message
-        publicKeys: (await openpgp.key.readArmored(_publicKeyArmored)).keys, // for verification
+        publicKeys: (await openpgp.key.readArmored(publicKey)).keys, // for verification
       });
       const { valid } = verified.signatures[0];
       const keyid = verified.signatures[0].keyid.toHex();
