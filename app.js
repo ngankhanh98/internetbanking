@@ -16,7 +16,7 @@ const router = express.Router();
 app.use(
   "/",
   router.get("/", (req, res) => {
-    res.send("Hello from NKL BANK API");
+    res.send("Hello from NKLBank API");
   })
 );
 app.use("/api/partnerbank", require("./routes/partnerbank.route"));
