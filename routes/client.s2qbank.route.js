@@ -84,7 +84,7 @@ router.post("/transaction", async (req, res) => {
       res.status(response.status).json(response.data);
     })
     .catch((err) => {
-      res.status(err.res.status).send(err);
+      res.status(err.response.status).send(err.response.data);
     });
 });
 
