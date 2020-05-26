@@ -7,9 +7,10 @@ const { generateKeyPairSync } = require("crypto");
 const router = express.Router();
 
 const {
-    privateKey,
-    security_key,
-  } = require("../config/client.s2qbank");
+  privateKey,
+  security_key,
+  passphrase,
+} = require("../config/client.s2qbank");
 
 // const { publicKey, privateKey } = generateKeyPairSync('rsa', {
 //   modulusLength: 4096,
@@ -53,12 +54,16 @@ router.post("/transaction", async (req, res) => {
     account_number: req.body.data.account_number,
     amount: req.body.data.amount,
   };
+
   let timestamp = moment().unix();
   let _data = JSON.stringify(data, null, 2);
 
-  const signer = crypto.createSign("RSA-SHA512");
+  const signer = crypto.createSign("RSA-SHA256");
   signer.update(_data);
-  const signature = signer.sign(privateKey, "hex");
+  const signature = signer.sign(
+    { key: privateKey, passphrase},
+    "hex"
+  );
 
   await axios({
     method: "post",
@@ -75,12 +80,11 @@ router.post("/transaction", async (req, res) => {
     },
   })
     .then((response) => {
-      console.log(response);
+      console.log(response.data);
       res.status(response.status).json(response.data);
     })
     .catch((err) => {
       res.status(err.res.status).send(err);
-      console.log(err);
     });
 });
 

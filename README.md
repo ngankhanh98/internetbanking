@@ -2,14 +2,24 @@
 Là server, cung cấp API để liên kết với ngân hàng khác: MPBank, S2QBank. Là client, sử dụng API của 2 ngân hàng này 💸💰
 
 ## Table of content
-  - [Cài đặt](#---cài-đặt)
-      - [Source code](#source-code)
-  - [Chạy thử](#---chạy-thử)
-      - [Postman](#Postman)
-      - [Import Postman collection](#import-postman-collection)
-      - [Step-by-step test](#step-by-step-test)
-  - [🙏 Acknowledge](#---acknowledge)
+- [Cài đặt](#---cài-đặt)
+    + [Source code](#source-code)
+- [Chạy thử](#---chạy-thử)
+    + [Postman](#postman)
+    + [Import Postman collection](#import-postman-collection)
 
+- [Phụ lục. Tài liệu kỹ thuật](#phụ-lục-tài-liệu-kỹ-thuật)
+    + [Qui trình client (MPBank, S2QBank) kết nối & dùng API](#qui-trình-client-mpbank-s2qbank-kết-nối--dùng-api)
+      - [Giao tiếp in person](#giao-tiếp-in-person)
+      - [MPBank, S2QBank gửi request lên NKLBanks server](#mpbank-s2qbank-gửi-request-lên-nklbanks-server)
+    + [NKLBank server nhận và xử lý request](#nklbank-server-nhận-và-xử-lý-request)
+      - [Đây là những gì NKLBank nhận được](#đây-là-những-gì-nklbank-nhận-được)
+      - [Đây là những gì NKLBank sẽ làm](#đây-là-những-gì-nklbank-sẽ-làm)
+      - [Đây là lý do NKBank](#đây-là-lý-do-nkbank)
+        * [Không để client giao (in person trước) publicKey để NBKbank lưu trữ và verify để khai thác API mãi mãi](#không-để-client-giao-in-person-trước-publickey-để-nbkbank-lưu-trữ-và-verify-để-khai-thác-api-mãi-mãi)
+        * [Không tách riêng method GET cho query account info và method POST cho transaction tiền](#không-tách-riêng-method-get-cho-query-account-info-và-method-post-cho-transaction-tiền)
+- [Acknowledge](#acknowledge)
+	
 ## 📦 Cài đặt
 Bạn cần [Node.js](https://nodejs.org/en/) để chạy client sử dụng API của MPBank và S2QBank.
 
@@ -43,7 +53,7 @@ Trong Postman, nhấn **File > Import...**, drop file [**internetbanking.postman
 Mỗi Request có `req.body` và `req.headers` valid. Nhấn **Send** để xem kết quả.
 
 
-# Phụ lục. Tài liệu kỹ thuật
+## Phụ lục. Tài liệu kỹ thuật
 This section shows how we did and why we did it that way for this project.
 
 ### Qui trình client (MPBank, S2QBank) kết nối & dùng API
@@ -78,7 +88,7 @@ const { data, signed_data } = req.body
 1. Check `timestamp` để xem gói tin có quá hạn chưa (quá 2 phút)
 2. Query `secret_key` từ `partner_code` trong cơ sở dữ liệu.
 3. Giải hash bằng `secret_key`, check xem trường `data` có match với `req.body.data` không.
-4. Nếu có `signed_data`, nghĩa là có transaction 💰, cần verify `signed_data`
+4. Nếu có `signed_data`, nghĩa là có transaction 💰, cần verify `signed_data`<br>
     4.1. Lên keyserver.ubuntu.com lookup **publicKey** từ `email` (trao đổi in person trước)<br>
     4.2. Verify bằng **publicKey**<br>
         - Verify hợp lệ, ghi transaction này vào database (tránh từ chối trách nhiệm trong tương lai) > thực hiện transaction (nộp/trừ tiền)<br>
@@ -94,6 +104,8 @@ NKLBank chỉ thấy duy nhất một vấn đề của GET account info là l�
 _Với lại, thích viết chung một method thôi, cơ bản cũng chỉ thay transaction_type = '+'_
 
 
+## 🙏 Acknowledge
+All essential knowledge is provided step-by-step by the lecturer, Mr. Dang Khoa.
 
 
 -------------------------------------------------------------------
@@ -154,6 +166,3 @@ req.body:
 ```
 **4. go to POST login when token expired**
 
-
-## 🙏 Acknowledge
-All essential knowledge is provided step-by-step by the lecturer, Mr. Dang Khoa.
