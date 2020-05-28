@@ -1,5 +1,5 @@
 # NKL Banking :D
-Là server, cung cấp API để liên kết với ngân hàng khác: MPBank, S2QBank. Là client, sử dụng API của 2 ngân hàng này 💸💰
+Là server, cung cấp API để liên kết với ngân hàng khác: MPBank, S2QBank. Là client, sử dụng API của 2 ngân hàng này 💰
 
 ## Table of content
 - [Cài đặt](#---cài-đặt)
