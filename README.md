@@ -1,5 +1,5 @@
-# NKL Banking
-Là server, cung cấp API để liên kết với ngân hàng khác: MPBank, S2QBank. Là client, sử dụng API của 2 ngân hàng này 💸💰
+# NKL Banking :D
+Là server, cung cấp API để liên kết với ngân hàng khác: MPBank, S2QBank. Là client, sử dụng API của 2 ngân hàng này 💰
 
 ## Table of content
 - [Cài đặt](#---cài-đặt)
@@ -16,7 +16,6 @@ Là server, cung cấp API để liên kết với ngân hàng khác: MPBank, S2
       - [Đây là những gì NKLBank nhận được](#đây-là-những-gì-nklbank-nhận-được)
       - [Đây là những gì NKLBank sẽ làm](#đây-là-những-gì-nklbank-sẽ-làm)
       - [Đây là lý do NKBank](#đây-là-lý-do-nkbank)
-        * [Không để client giao (in person trước) publicKey để NBKbank lưu trữ và verify để khai thác API mãi mãi](#không-để-client-giao-in-person-trước-publickey-để-nbkbank-lưu-trữ-và-verify-để-khai-thác-api-mãi-mãi)
         * [Không tách riêng method GET cho query account info và method POST cho transaction tiền](#không-tách-riêng-method-get-cho-query-account-info-và-method-post-cho-transaction-tiền)
 - [Acknowledge](#acknowledge)
 	
@@ -58,7 +57,7 @@ This section shows how we did and why we did it that way for this project.
 
 ### Qui trình client (MPBank, S2QBank) kết nối & dùng API
 #### Giao tiếp in person
-Trước hết, đại diện MPBank và S2QBank liên hệ với NKLBank (this) để cung cấp một `partner_code`, `secret_key`, `email` dùng mãi mãi.
+Trước hết, đại diện MPBank và S2QBank liên hệ với NKLBank (this) để cung cấp một `partner_code`,`email`, `public PGP key` dùng mãi mãi.
 
 #### MPBank, S2QBank gửi request lên NKLBanks server
 Từ Postman, các trường được yêu cầu gồm:
@@ -89,16 +88,9 @@ const { data, signed_data } = req.body
 2. Query `secret_key` từ `partner_code` trong cơ sở dữ liệu.
 3. Giải hash bằng `secret_key`, check xem trường `data` có match với `req.body.data` không.
 4. Nếu có `signed_data`, nghĩa là có transaction 💰, cần verify `signed_data`<br>
-    4.1. Lên keyserver.ubuntu.com lookup **publicKey** từ `email` (trao đổi in person trước)<br>
-    4.2. Verify bằng **publicKey**<br>
-        - Verify hợp lệ, ghi transaction này vào database (tránh từ chối trách nhiệm trong tương lai) > thực hiện transaction (nộp/trừ tiền)<br>
-        - Nếu không, thoát.
 5. Thực hiện query account information.
 
 #### Đây là lý do NKBank
-##### Không để client giao (in person trước) publicKey để NBKbank lưu trữ và verify để khai thác API mãi mãi 
-**Đỡ bất đồng bộ.** Lúc hai bên cũng code, khó tránh khỏi sai format key, key bất đồng bộ do một bên lạc mất. Nên tìm một nơi lưu trữ online có vẻ khá tiện.<br>
-**publicKey có hạn dùng trong khoản thời gian.** Tránh việc khai thác mãi mãi.
 ##### Không tách riêng method GET cho query account info và method POST cho transaction tiền
 NKLBank chỉ thấy duy nhất một vấn đề của GET account info là lỗi **404-Page not found** trả về khi query sai `account_number`. Đây là misleading error. Error trả về nên là, **Account not found** hoặc **No information found of such account**... gì cũng được, quan trọng là ta tùy chỉnh được error.message để client thực sự hiểu lỗi gì.<br>
 _Với lại, thích viết chung một method thôi, cơ bản cũng chỉ thay transaction_type = '+'_
