@@ -19,6 +19,27 @@ app.use(
     res.send("Hello from NKLBank API");
   })
 );
+
+app.use("/api/auth", require("./routes/auth.route"));
+function verify(req, res, next) {
+  const token = req.headers["x-access-token"];
+  if (token) {
+    jwt.verify(token, "secretKey", function (err, payload) {
+      if (err) throw new createError(401, err);
+
+      console.log(payload);
+      next();
+    });
+  } else {
+    throw new createError(401, "No access token found");
+  }
+}
+
+app.use('/', router);
+//app.use("/api/customer", verify, require("./routes/customer.route"));
+app.use("/api/customer", require("./routes/customer.route"));
+app.use("/api/account", require("./routes/account.route"));
+
 app.use("/api/partnerbank", require("./routes/partnerbank.route"));
 app.use('/client/mpbank', require("./routes/client.mpbank.route"));
 app.use('/client/s2pbank', require("./routes/client.s2qbank.route"));
