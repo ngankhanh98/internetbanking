@@ -7,6 +7,7 @@ const createError = require("https-error");
 const CryptoJS = require("crypto-js");
 const moment = require("moment");
 var isEqual = require("lodash.isequal");
+const signpgp = require("../middlewares/signpgp.mdw")
 
 const router = express.Router();
 
@@ -26,7 +27,10 @@ router.post("/request", async (req, res) => {
   //   timestamp: 873643,
   //   api_signature: hash(data, timestamp, secret_key)
   // }
+  
+  //res.status(201);
 
+ 
   const { data, signed_data } = req.body;
   const { partner_code, timestamp, api_signature } = req.headers;
   const _timestamp = new moment(timestamp);
@@ -96,19 +100,23 @@ router.post("/request", async (req, res) => {
         }
 
         const ret = await accountModel.drawMoney(data);
+        const info = {
+           msg: `Transaction succeeded. Online contract stored with keyID = ${keyid}`,
+          ret: ret,
+        }
+        const sign = await signpgp.sign(info);
         if (ret) {
-          return res.status(200).json({
-            msg: `Transaction succeeded. Online contract stored with keyID = ${keyid}`,
-            ret: ret,
-          });
+          return res.status(200).json({info, sign});
         } else if (ret === false) {
           res.status(403).send("Not enough money to process transaction");
           throw new createError(403, "Not enough money to process transaction");
         }
+        
       } else {
         res.status(401).send("Signature could not be verified");
         throw new createError(401, "Signature could not be verified");
       }
+      
     })();
   }
 
