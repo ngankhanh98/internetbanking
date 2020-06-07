@@ -13,11 +13,11 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   // req.headers {x-access-token}
 
-  // const token = req.headers["x-access-token"];
-  // const decode = jwt.decode(token);
-  // const { username } = decode;
-  // const rows = await customerModel.detail(username);
-  const rows = await customerModel.all(); 
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+  const rows = await customerModel.detail(username);
+  // const rows = await customerModel.all(); 
   res.json(rows);
 });
 

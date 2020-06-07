@@ -37,8 +37,8 @@ function verify(req, res, next) {
 
 app.use('/', router);
 app.use("/api/customer", verify, require("./routes/customer.route"));
-app.use("/api/customer", require("./routes/customer.route"));
-app.use("/api/account", require("./routes/account.route"));
+// app.use("/api/customer", require("./routes/customer.route"));
+// app.use("/api/account", require("./routes/account.route"));
 
 app.use("/api/partnerbank", require("./routes/partnerbank.route"));
 app.use('/client/mpbank', require("./routes/client.mpbank.route"));
