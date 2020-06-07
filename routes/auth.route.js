@@ -3,7 +3,7 @@ const customerModel = require("../models/customer.model");
 const createError = require("https-error");
 const jwt = require("jsonwebtoken");
 const ranToken = require("rand-token");
-const config = require("../config/default.json");
+const { auth } = require("../config/default.json");
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ router.post("/", async (req, res) => {
   // if login suceeded
   const token = generateToken(result.username);
 
-  const RFSZ = config.auth.RFSZ;
+  const { RFSZ } = auth;
   const refreshToken = ranToken.generate(RFSZ);
   await customerModel.updateToken(result.username, refreshToken);
 
@@ -58,9 +58,10 @@ router.post("/refresh", async (req, res) => {
 });
 
 const generateToken = (username) => {
+  const {key, expiresIn} = auth;
   const payLoad = { username: username };
-  const token = jwt.sign(payLoad, config.auth.key, {
-    expiresIn: config.auth.expiresIn,
+  const token = jwt.sign(payLoad, key, {
+    expiresIn: expiresIn,
   });
   return token;
 };
