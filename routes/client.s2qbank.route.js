@@ -10,21 +10,7 @@ const {
   privateKey,
   security_key,
   passphrase,
-} = require("../config/client.s2qbank");
-
-// const { publicKey, privateKey } = generateKeyPairSync('rsa', {
-//   modulusLength: 4096,
-//   publicKeyEncoding: {
-//     type: 'spki',
-//     format: 'pem'
-//   },
-//   privateKeyEncoding: {
-//     type: 'pkcs8',
-//     format: 'pem',
-//     cipher: 'aes-256-cbc',
-//     passphrase: config.passphrase
-//   }
-// });
+} = require("../config/client.s2qbank.json");
 
 router.get("/:account", (req, res) => {
   let data = { account_number: req.params.account };
