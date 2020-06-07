@@ -1,0 +1,15 @@
+{
+  "mysql": {
+    "connectionLimit": 100,
+    "host": "ebanking.cj3ogc5subyk.ap-southeast-1.rds.amazonaws.com",
+    "port": 3306,
+    "user": "admin",
+    "password": "20031998",
+    "database": "ebanking"
+  },
+  "auth": {
+    "key": "secretKey",
+    "expiresIn": "10m",
+    "RFSZ": 80
+  }
+}

@@ -1,9 +1,9 @@
 const express = require("express");
 const customerModel = require("../models/customer.model");
 const createError = require("https-error");
-const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const ranToken = require("rand-token");
+const config = require("../config/default.json");
 
 const router = express.Router();
 
@@ -28,7 +28,7 @@ router.post("/", async (req, res) => {
   // if login suceeded
   const token = generateToken(result.username);
 
-  const RFSZ = 80;
+  const RFSZ = config.auth.RFSZ;
   const refreshToken = ranToken.generate(RFSZ);
   await customerModel.updateToken(result.username, refreshToken);
 
@@ -44,7 +44,10 @@ router.post("/refresh", async (req, res) => {
   const decode = jwt.decode(req.body.accessToken);
   const { username } = decode;
   try {
-    const ret = await customerModel.verifyRefreshToken(username, req.body.refreshToken);
+    const ret = await customerModel.verifyRefreshToken(
+      username,
+      req.body.refreshToken
+    );
     if (ret === false) throw new createError(402, "Invalid access token");
   } catch (error) {
     throw new createError(401, error.message);
@@ -56,7 +59,9 @@ router.post("/refresh", async (req, res) => {
 
 const generateToken = (username) => {
   const payLoad = { username: username };
-  const token = jwt.sign(payLoad, "secretKey", { expiresIn: "10m" }); //expire: 10mins
+  const token = jwt.sign(payLoad, config.auth.key, {
+    expiresIn: config.auth.expiresIn,
+  });
   return token;
 };
 module.exports = router;

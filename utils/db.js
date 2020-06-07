@@ -1,15 +1,8 @@
 const mysql = require("mysql");
 const { promisify } = require("util");
+const config = require('../config/default.json')
 
-const pool = mysql.createPool({
-  connectionLimit: 100,
-  host: "ebanking.cj3ogc5subyk.ap-southeast-1.rds.amazonaws.com",
-  port: 3306,
-  user: "admin",
-  password: "20031998",
-  database: "ebanking",
-});
-
+const pool = mysql.createPool(config.mysql);
 const pool_query = promisify(pool.query).bind(pool);
 
 module.exports = {

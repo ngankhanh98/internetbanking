@@ -6,18 +6,12 @@ const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
-/** Get detail of a customer
- * input: req.headers {x-access-token}
- * output: [{"username": "ngankhanh","password": "$2a$08$zzwtiy1PXdrHFPiCyqaOx.EMTfaXq8MCqxvKwqnEyK7O9i.P0YSA6", "fullname": "NGUYEN THI NGAN KHANH"}]
- */
 router.get("/", async (req, res) => {
   // req.headers {x-access-token}
-
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
   const { username } = decode;
   const rows = await customerModel.detail(username);
-  // const rows = await customerModel.all(); 
   res.json(rows);
 });
 
