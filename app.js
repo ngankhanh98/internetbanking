@@ -10,7 +10,6 @@ app.use(morgan("dev"));
 app.use(cors());
 app.use(express.json());
 
-
 const router = express.Router();
 
 app.use(
@@ -35,15 +34,14 @@ function verify(req, res, next) {
   }
 }
 
-app.use('/', router);
+app.use("/", router);
 app.use("/api/customer", verify, require("./routes/customer.route"));
 // app.use("/api/customer", require("./routes/customer.route"));
-// app.use("/api/account", require("./routes/account.route"));
+app.use("/api/account", verify, require("./routes/account.route"));
 
 app.use("/api/partnerbank", require("./routes/partnerbank.route"));
 // app.use('/client/mpbank', require("./routes/client.mpbank.route"));
 // app.use('/client/s2pbank', require("./routes/client.s2qbank.route"));
-
 
 app.use((req, res, next) => {
   res.status(404).send("NOT FOUND");
