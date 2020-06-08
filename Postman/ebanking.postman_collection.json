@@ -1,0 +1,397 @@
+{
+	"info": {
+		"_postman_id": "1c38f194-0edf-4a20-8a6f-1ce777c247fa",
+		"name": "ebanking",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "customer",
+			"item": [
+				{
+					"name": "detail",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU4OTIxMTM1NiwiZXhwIjoxNTg5MjExOTU2fQ.ze_9NdWpq7tTrl69WgeV8xMriVjJAS5MFgGvur_Z-rE",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"username\": \"thuyloan\",\n\t\"password\": \"123456789\",\n\t\"fullname\": \"PHUNG THUY LOAN\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/customer/",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"customer",
+								""
+							]
+						},
+						"description": "View information of your own "
+					},
+					"response": []
+				},
+				{
+					"name": "update",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU4OTIxMTM1NiwiZXhwIjoxNTg5MjExOTU2fQ.ze_9NdWpq7tTrl69WgeV8xMriVjJAS5MFgGvur_Z-rE",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"password\": \"00000\",\n\t\"fullname\": \"NGUYEN NGAN KHANH\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/customer/update",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"customer",
+								"update"
+							]
+						},
+						"description": "Update information of your own (password or/and fullname are editable)"
+					},
+					"response": []
+				},
+				{
+					"name": "list accounts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MTU3NjMxOSwiZXhwIjoxNTkxNTc2OTE5fQ.ushVU8XiiUOjSF1ivfajtSBeyszyielRNvbht2mtGao",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/customer/accounts",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"customer",
+								"accounts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add beneficiary",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MTYyMDcwOCwiZXhwIjoxNTkxNjIxMzA4fQ.Hx5sjrt_H8Vyb70ctXcoFuouJXYIItXmFApHGSo29w0",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"account_number\": \"00051027\",\n\t\"bank\":\"s2qbank\",\n\t\"name\": \"USER 2\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/customer/add-beneficiary",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"customer",
+								"add-beneficiary"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n\t\r\n    \"username\": \"ngankhanh\",\r\n    \"password\": \"00000\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/auth",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"auth"
+							],
+							"query": [
+								{
+									"key": "x-access-token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MTU3ODY3MCwiZXhwIjoxNTkxNTc5MjcwfQ.jAKdcWNdyCGAxgdnXq4AA6iU3TGwBd_3b1UikVquzPo",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "refresh token",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"accessToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU4OTIxMTM0NiwiZXhwIjoxNTg5MjExOTQ2fQ.EN7lnPf1EAbno8MnI2Ovf5FxfeyiegW8Maep9xwtjJQ\",\r\n    \"refreshToken\": \"uFKedUhaGwx0nEZNhWJRf5toEI4H2iQ4aCUSsrBpfs4aTHxd9OR5KoJ5Zeg2q8oyYrZmt9axAuihn4CB\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/auth/refresh",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"auth",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "partnerbank | MPBank",
+			"item": [
+				{
+					"name": "add money of NKLBank's account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "partner_code",
+								"value": "MtcwLbASeIXVnKurQCHrDCmsTEsBD7rQ44wHsEWjWtl8k",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " { \n\t\t\"transaction_type\": \"+\", \n\t\t\"source_account\": \"3234\", \n\t\t\"target_account\": \"12345\", \n\t\t\"amount_money\": 2001\n }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/request",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "subs money of NKLBank's account",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "partner_code",
+								"value": "MtcwLbASeIXVnKurQCHrDCmsTEsBD7rQ44wHsEWjWtl8k",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " { \n\t\t\"transaction_type\": \"-\", \n\t\t\"source_account\": \"3234\", \n\t\t\"target_account\": \"12345\", \n\t\t\"amount_money\": 2001\n }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/request",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"request"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "query NKLBank's account info",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "partner_code",
+								"value": "MtcwLbASeIXVnKurQCHrDCmsTEsBD7rQ44wHsEWjWtl8k",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": " { \n\t\t\"transaction_type\": \"?\", \n\t\t\"source_account\": \"3234\", \n\t\t\"target_account\": \"12345\", \n\t\t\"amount_money\": 2001\n }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:5000/request",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "5000",
+							"path": [
+								"request"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "employee",
+			"item": [
+				{
+					"name": "add customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MTU4MDE0MiwiZXhwIjoxNTkxNTgwNzQyfQ.TNMZdeMwsWANw18aQUfRt1nmUYjJ0HvIx9W-MQN9nu8",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n        \"username\": \"tonghuynhdat\",\r\n        \"fullname\": \"Tống Huỳnh Đạt\",\r\n        \"email\": \"tonghuynhdat\",\r\n        \"password\": \"1234567890\"\r\n    }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/customer/add",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"customer",
+								"add"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"protocolProfileBehavior": {}
+		},
+		{
+			"name": "welcome",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						""
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

@@ -6,7 +6,7 @@ const moment = require("moment");
 module.exports = {
   all: (_) => db.load(`select * from customer`),
   detail: (username) =>
-    db.load(`select username, fullname, id from customer where username = "${username}"`),
+    db.load(`select * from customer where username = "${username}"`),
   add: async (entity) => {
     // table customer {username, password, fullname};
     // entity {username, password, fullname}
@@ -64,7 +64,23 @@ module.exports = {
 
     return false;
   },
-  getAllAccount: async (username) =>{
-    return await db.load(`select account.* where customer_username = '${username}'`)
-  }
+  getAccounts: async (username) => {
+    try {
+      return await db.load(
+        `select * from account where customer_username = '${username}'`
+      );
+    } catch (error) {
+      return error;
+    }
+  },
+  getByAccountNumber: async (account_number) => {
+    try {
+      const rows =  await db.load(
+        `select * from customer, account where customer.username = account.customer_username and account.account_number = '${account_number}'`
+      );
+      return rows[0];
+    } catch (error) {
+      return error;
+    }
+  },
 };
