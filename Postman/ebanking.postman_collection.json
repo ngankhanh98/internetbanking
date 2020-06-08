@@ -113,19 +113,19 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:3000/api/customer/add-beneficiary",
+					"name": "add beneficiary",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "x-access-token",
-								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MTU4MzU5MywiZXhwIjoxNTkxNTg0MTkzfQ.2Fp8WaIj-neJ2h9YvGb1s-SCAR57Xik8yviYxdgSbLk",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MTYyMDcwOCwiZXhwIjoxNTkxNjIxMzA4fQ.Hx5sjrt_H8Vyb70ctXcoFuouJXYIItXmFApHGSo29w0",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"account_number\": \"98454\",\n\t\"name\": \"HOANG NHI\"\n}",
+							"raw": "{\n\t\"account_number\": \"00051027\",\n\t\"bank\":\"s2qbank\",\n\t\"name\": \"USER 2\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
