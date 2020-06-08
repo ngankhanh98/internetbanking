@@ -75,9 +75,10 @@ module.exports = {
   },
   getByAccountNumber: async (account_number) => {
     try {
-      return await db.load(
+      const rows =  await db.load(
         `select * from customer, account where customer.username = account.customer_username and account.account_number = '${account_number}'`
       );
+      return rows[0];
     } catch (error) {
       return error;
     }

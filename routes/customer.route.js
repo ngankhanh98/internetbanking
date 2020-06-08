@@ -5,7 +5,8 @@ const beneficiaryModel = require("../models/beneficiaries.model");
 const createError = require("https-error");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const mpbank = require("../middlewares/mpbank.mdw");
+const s2qbank = require("../middlewares/s2qbank.mdw");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
@@ -32,24 +33,45 @@ router.get("/accounts", async (req, res) => {
 
 router.post("/add-beneficiary", async (req, res) => {
   // req.headers {x-access-token}
-  // req.body {account_number}
+  // req.body {account_number, name (optional), bank (optional)}
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
   const { username } = decode;
 
-  const { account_number, name } = req.body;
+  const { account_number, name, bank } = req.body;
 
-  const beneficiary = await customerModel.getByAccountNumber(account_number);
-  if (beneficiary.length === 0)
-    res.status(403).json({"msg":"Not found such beneficiary account"});
+  var beneficiary, ref_name;
+  try {
+    switch (bank) {
+      case "mpbank":
+        beneficiary = await mpbank.getAccountInfo(account_number);
+        ref_name = beneficiary.result;
+        break;
+      case "s2qbank":
+        beneficiary = await s2qbank.getAccountInfo(account_number);
+        ref_name = beneficiary.username;
+        break;
+      default:
+        beneficiary = await customerModel.getByAccountNumber(account_number);
+        ref_name = beneficiary.fullname;
+        break;
+    }
+    if (beneficiary == undefined || beneficiary.name == "Error")
+      res.status(403).json({ msg: "1. Not found such account" });
+  } catch (error) {
+    // only mpbank + nklbank throw error
+    console.log(`error: ${error}`);
+    res.status(403).json({ msg: "Not found such account" });
+  }
 
-  var _name = name || beneficiary[0].fullname;
-
+  var _name = name || ref_name;
+  console.log(`ref_name: ${ref_name}`);
   try {
     const ret = await beneficiaryModel.add({
       customer_username: username,
       beneficiary_account: account_number,
       beneficiary_name: _name,
+      partner_bank: bank
     });
     res.status(200).json(ret);
   } catch (error) {
