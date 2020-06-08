@@ -41,7 +41,7 @@ router.post("/add-beneficiary", async (req, res) => {
 
   const beneficiary = await customerModel.getByAccountNumber(account_number);
   if (beneficiary.length === 0)
-    res.status(403).send("Not found such beneficiary account");
+    res.status(403).json({"msg":"Not found such beneficiary account"});
 
   var _name = name || beneficiary[0].fullname;
 
