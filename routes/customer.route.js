@@ -116,4 +116,18 @@ router.post("/update", async (req, res) => {
   }
 });
 
+router.get('/beneficiarys', async (req,res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+
+  const username = decode.username;
+  try {
+    const result = await beneficiaryModel.getAllByUsername(username);
+    console.log("bene",username);
+    res.status(200).json(result);
+  } catch (error) {
+    throw new createError(401, error.message);
+  }
+})
+
 module.exports = router;
