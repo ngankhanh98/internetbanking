@@ -8,6 +8,8 @@ const jwt = require("jsonwebtoken");
 const mpbank = require("../middlewares/mpbank.mdw");
 const s2qbank = require("../middlewares/s2qbank.mdw");
 const router = express.Router();
+const mailer = require("../utils/Mailer");
+const otp = require("../utils/otp")
 
 router.get("/", async (req, res) => {
   // req.headers {x-access-token}
@@ -115,5 +117,29 @@ router.post("/update", async (req, res) => {
     throw new createError(401, error.message);
   }
 });
+
+router.get("/beneficiary-account", async (req, res) => {
+  // req.headers {x-access-token}
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+  const rows = await customerModel.detail(username);
+  res.status(200).json(rows);
+});
+
+
+router.get("/beneficiary-account/:accountnumber", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+  console.log(username)
+  try {
+    const AccNumber = req.params;
+    const rows = await beneficiaccountModel.getByAccNumber(AccNumber);
+    res.status(200).json(rows);
+  } catch (error) {
+    res.status(401).json(error);
+  }
+})
 
 module.exports = router;

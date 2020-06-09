@@ -6,12 +6,14 @@ const s2qbank = require("../middlewares/s2qbank.mdw");
 const router = express.Router();
 
 router.post("/", async (req, res) => {
+  console.log("--------------")
+  console.log(req);
   const { account_number, bank } = req.body;
 
   var account_info;
   try {
     switch (bank) {
-      case "mpbank":
+      case "mpbank" || undefined:
         account_info = await mpbank.getAccountInfo(account_number);
         break;
       case "s2qbank":
@@ -27,7 +29,7 @@ router.post("/", async (req, res) => {
     res.status(401).json(error);
   }
 
-  res.status(200).json(account_info);
+  res.status(200).json({ ...account_info[0] });
   // mpbank: response la { result: "Nguyen Thi Hong Mo"}
   // s2qbank: response la { username: "demo2"}
   // nklbank: response la { fullname, email, account_number, type }

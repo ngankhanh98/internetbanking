@@ -24,9 +24,11 @@
     "https-error": "^1.0.2",
     "jsonwebtoken": "^8.5.1",
     "lodash.isequal": "^4.5.0",
+    "mailer": "^0.6.7",
     "moment": "^2.26.0",
     "morgan": "^1.10.0",
     "mysql": "^2.18.1",
+    "node": "^14.4.0",
     "openpgp": "^4.10.4",
     "rand-token": "^1.0.1",
     "util": "^0.12.3"
