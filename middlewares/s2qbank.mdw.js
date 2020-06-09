@@ -55,12 +55,7 @@ module.exports = {
         signature: signature,
       },
     })
-      .then((response) => {
-        console.log(response.data);
-        res.status(response.status).json(response.data);
-      })
-      .catch((err) => {
-        res.status(err.response.status).send(err.response.data);
-      });
+      .then((response) => response.data)
+      .catch((err) => err.response.data);
   },
 };

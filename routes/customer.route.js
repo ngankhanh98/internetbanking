@@ -10,6 +10,8 @@ const mpbank = require("../middlewares/mpbank.mdw");
 const s2qbank = require("../middlewares/s2qbank.mdw");
 const router = express.Router();
 
+const { tariff } = require("../config/default.json");
+
 router.get("/", async (req, res) => {
   // req.headers {x-access-token}
   const token = req.headers["x-access-token"];
@@ -57,7 +59,9 @@ router.post("/add-beneficiary", async (req, res) => {
         ref_name = beneficiary.fullname;
         break;
     }
+    console.log(beneficiary);
     if (beneficiary == undefined || beneficiary.name == "Error")
+      // s2qbank throw {Error:"..."}
       res.status(403).json({ msg: "1. Not found such account" });
   } catch (error) {
     // only mpbank + nklbank throw error
@@ -102,6 +106,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
   try {
     const ret = await transactionModel.add(transaction);
     transaction_id = ret.insertId;
+    console.log(ret);
   } catch (error) {
     console.log(error);
     return error;
@@ -124,10 +129,13 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await transactionModel.del(transaction_id);
     return error;
   }
+
   try {
     await accountModel.drawMoney(_receiver);
   } catch (error) {
-    await transactionModel.del(transaction_id);
+    await transactionModel.del(transaction_id); // delete transaction record
+    const revert_depositor = { ..._depositor, transaction_type: "+" }; // revert depositor balance
+    await accountModel.drawMoney(revert_depositor);
     return error;
   }
   res.status(200).json({
@@ -135,7 +143,94 @@ router.post("/intrabank-transfer-money", async (req, res) => {
   });
 });
 
-router.post("/interbank-transfer-money", async (req, res) => {});
+router.post("/interbank-transfer-money", async (req, res) => {
+  const {
+    depositor,
+    receiver,
+    amount,
+    partner_bank,
+    charge_include,
+  } = req.body;
+  const fee = tariff.transfer_fee;
+  const depositor_pay = charge_include ? amount + fee : amount;
+  const receiver_get = charge_include ? amount : amount - fee;
+  const transaction = { ...req.body, amount: depositor_pay };
+
+  // check if depositor's balance > money to transfer
+  const depositors = await accountModel.getByAccNumber(depositor);
+  const { account_balance } = depositors[0];
+  if (account_balance < amount) {
+    res.status(403).json({ msg: "Account balance not enough" });
+  }
+
+  // check if receiver valid (in case of add new, not from the list)
+  var interbank_query;
+  try {
+    switch (partner_bank) {
+      case "mpbank":
+        interbank_query = await mpbank.getAccountInfo(receiver);
+        break;
+      case "s2qbank":
+        interbank_query = await s2qbank.getAccountInfo(receiver);
+        break;
+    }
+    if (interbank_query.name == "Error")
+      // s2qbank throw {Error:"..."}
+      res.status(403).json({ msg: "Not found such account" });
+  } catch (error) {
+    console.log(`error: ${error}`);
+    res.status(403).json({ msg: "Not found such account" });
+  }
+
+  // store transaction
+  var transaction_id;
+  try {
+    const ret = await transactionModel.add(transaction);
+    transaction_id = ret.insertId;
+    console.log(ret);
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+
+  // procceed draw money
+  const _depositor = {
+    transaction_type: "-",
+    target_account: depositor,
+    amount_money: depositor_pay,
+  };
+
+  try {
+    await accountModel.drawMoney(_depositor);
+    console.log("nklbank 200");
+  } catch (error) {
+    await transactionModel.del(transaction_id);
+    return error;
+  }
+
+  try {
+    switch (partner_bank) {
+      case "mpbank":
+        await mpbank.transferMoney(receiver, receiver_get);
+        console.log("mpbank 200");
+        break;
+      default:
+        await s2qbank.transferMoney(receiver, receiver_get);
+        console.log("s2qbank 200");
+        break;
+    }
+  } catch (error) {
+    await transactionModel.del(transaction_id);
+    const revert_depositor = { ..._depositor, transaction_type: "+" };
+    await accountModel.drawMoney(revert_depositor);
+    console.log(error);
+    return error;
+  }
+
+  res.status(200).json({
+    msg: `Transfer money succeed. Transaction stored at transaction_id = ${transaction_id}`,
+  });
+});
 
 // permission: personels only
 router.post("/add", async (req, res) => {
