@@ -11,15 +11,15 @@ module.exports = {
     return db.load(`select * from account where account_number = ${accnumber}`);
   },
   drawMoney: async (entity) => {
-    if (entity.transaction_type === "-") {
-      const rows = await db.load(`select * from account where account_number = "${entity.target_account}"`);
-      console.log(rows[0]);
+    const {transaction_type, target_account, amount_money} = entity;
+    if (transaction_type === "-") {
+      const rows = await db.load(`select * from account where account_number = "${target_account}"`);
       const balance = parseInt(rows[0].account_balance);
-    if (balance < entity.amount_money) return false; // not enough money to be withdrawn
+    if (balance < amount_money) return false; // not enough money to be withdrawn
     }
 
     return await db.load(
-      `update account set account_balance = account_balance ${entity.transaction_type} ${entity.amount_money} where account_number = ${entity.target_account}`
+      `update account set account_balance = account_balance ${transaction_type} ${amount_money} where account_number = ${target_account}`
     );
   },
   getCustomerInfoByAccNumber: (account_number) => {
