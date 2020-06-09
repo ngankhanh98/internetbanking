@@ -2,6 +2,7 @@ const express = require("express");
 const customerModel = require("../models/customer.model");
 const accountModel = require("../models/account.model");
 const beneficiaryModel = require("../models/beneficiaries.model");
+const transactionModel = require("../models/transaction.model");
 const createError = require("https-error");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -71,13 +72,70 @@ router.post("/add-beneficiary", async (req, res) => {
       customer_username: username,
       beneficiary_account: account_number,
       beneficiary_name: _name,
-      partner_bank: bank
+      partner_bank: bank,
     });
     res.status(200).json(ret);
   } catch (error) {
     res.status(401).json(error);
   }
 });
+
+router.post("/intrabank-transfer-money", async (req, res) => {
+  const { depositor, receiver, amount } = req.body;
+  const transaction = req.body;
+
+  // check beforehead whether: (1) depositor's balance is available for transfering
+  // (2) receiver, in case of adding new (not from the list) is valid.
+  const depositors = await accountModel.getByAccNumber(depositor);
+  const { account_balance } = depositors[0];
+  const receivers = await accountModel.getByAccNumber(receiver);
+
+  if (account_balance < amount) {
+    res.status(403).json({ msg: "Account balance not enough" });
+  }
+  if (receivers.length === 0) {
+    res.status(403).json({ msg: "Receiver account not found" });
+  }
+
+  // store transaction
+  var transaction_id;
+  try {
+    const ret = await transactionModel.add(transaction);
+    transaction_id = ret.insertId;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+
+  // proceed draw money
+  const _depositor = {
+    transaction_type: "-",
+    target_account: depositor,
+    amount_money: amount,
+  };
+  const _receiver = {
+    transaction_type: "+",
+    target_account: receiver,
+    amount_money: amount,
+  };
+  try {
+    await accountModel.drawMoney(_depositor);
+  } catch (error) {
+    await transactionModel.del(transaction_id);
+    return error;
+  }
+  try {
+    await accountModel.drawMoney(_receiver);
+  } catch (error) {
+    await transactionModel.del(transaction_id);
+    return error;
+  }
+  res.status(200).json({
+    msg: `Transfer money succeed. Transaction stored at transaction_id = ${transaction_id}`,
+  });
+});
+
+router.post("/interbank-transfer-money", async (req, res) => {});
 
 // permission: personels only
 router.post("/add", async (req, res) => {
