@@ -25,7 +25,7 @@ module.exports = {
   getCustomerInfoByAccNumber: (account_number) => {
     const accnumber = parseInt(account_number);
     return db.load(
-      `select fullname, email, account_number from customer, account where customer_username = username and account_number = ${accnumber}`
+      `select fullname, email, account_number, type from customer, account where customer_username = username and account_number = ${accnumber}`
     );
   },
 };

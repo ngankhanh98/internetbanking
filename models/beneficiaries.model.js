@@ -8,5 +8,12 @@ module.exports = {
         } catch (error) {
             return error
         }
+    },
+    getAllByUsername: async (username)=> {
+        try {
+            return await db.load(`select * from beneficiaries where customer_username = "${username}"`)
+        } catch (error) {
+            return error
+        }
     }
 };
