@@ -276,11 +276,28 @@ router.get('/beneficiaries', async (req,res) => {
   const username = decode.username;
   try {
     const result = await beneficiaryModel.getAllByUsername(username);
-    console.log("bene",username);
     res.status(200).json(result);
   } catch (error) {
     throw new createError(401, error.message);
   }
 })
 
+router.get('/transactions/transfer', async (req,res) => {
+  const account_number = req.body.account_number;
+  try {
+    const result = await transactionModel.getTransferByAccNumber(account_number);
+    res.status(200).json(result);
+  } catch (error) {
+    throw new createError(401, error.message);
+  }
+})
+router.get('/transactions/receiver', async (req,res) => {
+  const account_number = req.body.account_number;
+  try {
+    const result = await transactionModel.getReceiverByAccNumber(account_number);
+    res.status(200).json(result);
+  } catch (error) {
+    throw new createError(401, error.message);
+  }
+})
 module.exports = router;
