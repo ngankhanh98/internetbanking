@@ -57,19 +57,13 @@ module.exports = {
       signature: detachedSignature,
     };
 
-    await axios({
+    return await axios({
       method: "POST",
       url: "https://mpbinternetbanking.herokuapp.com/user/transfer",
       data: data,
       headers: headers,
     })
-      .then((response) => {
-        console.log(response);
-        res.status(response.status).json(response.data);
-      })
-      .catch((err) => {
-        res.status(err.res.status).send(err);
-        console.log(err);
-      });
+      .then((response) => response.data)
+      .catch((err) => err);
   },
 };
