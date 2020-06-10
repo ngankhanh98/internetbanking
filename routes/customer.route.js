@@ -269,7 +269,7 @@ router.post("/update", async (req, res) => {
   }
 });
 
-router.get('/beneficiarys', async (req,res) => {
+router.get('/beneficiaries', async (req,res) => {
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
 
