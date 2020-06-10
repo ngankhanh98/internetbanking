@@ -1,6 +1,6 @@
 const db = require("../utils/db");
 
-module.exports = {
+const model = {
   add: async (transaction) => await db.add(transaction, "transaction"),
   del: async (id) => await db.del({ id: id }, "transaction"),
   getTransferByAccNumber: async (acccount_number) => {
@@ -18,3 +18,5 @@ module.exports = {
     }
   }
 };
+
+module.exports = model;

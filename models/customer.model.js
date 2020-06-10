@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const createError = require("https-error");
 const moment = require("moment");
 
-module.exports = {
+const model = {
   all: (_) => db.load(`select * from customer`),
   detail: async (username) =>
     db.load(`select * from customer where username = "${username}"`),
@@ -85,7 +85,7 @@ module.exports = {
   },
   updatePassword: async (oldPassword, newPassword, username) => {  
     
-    const info = await db.load(`select * from customer where username = "${username}"`);   
+    const info = await model.detail(username);   
      
     if (bcrypt.compareSync(oldPassword, info[0].password)) {  
       if (newPassword) newPassword = bcrypt.hashSync(newPassword, 8);
@@ -101,3 +101,5 @@ module.exports = {
     return rows;
   },
 };
+
+module.exports = model;
