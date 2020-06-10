@@ -5,7 +5,7 @@ const moment = require("moment");
 
 module.exports = {
   all: (_) => db.load(`select * from customer`),
-  detail: (username) =>
+  detail: async (username) =>
     db.load(`select * from customer where username = "${username}"`),
   add: async (entity) => {
     // table customer {username, password, fullname};
@@ -83,8 +83,16 @@ module.exports = {
       return error;
     }
   },
-  updatePassword: async (newPassword, username) => {  
-
+  updatePassword: async (oldPassword, newPassword, username) => {  
+    
+    const info = await db.load(`select * from customer where username = "${username}"`);   
+     
+    if (bcrypt.compareSync(oldPassword, info[0].password)) {  
+      if (newPassword) newPassword = bcrypt.hashSync(newPassword, 8);
+    } 
+    else {
+      throw new createError(401, 'Old password is wrong');
+    }
     try {
       rows = await db.load(`update customer set password ="${newPassword}" where username ="${username}" `);
     } catch (error) {
