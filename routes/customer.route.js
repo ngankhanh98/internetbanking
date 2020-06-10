@@ -300,4 +300,25 @@ router.get('/transactions/receiver', async (req,res) => {
     throw new createError(401, error.message);
   }
 })
+
+router.put('/passwords/ibanking', async (req,res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const username = decode.username;
+  var { oldPassword, newPassword } = req.body;
+  const info = await customerModel.detail(username);   
+   
+  if (bcrypt.compareSync(oldPassword, info[0].password)) {  
+    if (newPassword) newPassword = bcrypt.hashSync(newPassword, 8);
+  } 
+  else {
+    throw new createError(401, 'Old password is wrong');
+  }
+  try {
+    const result = await customerModel.updatePassword(newPassword, username);
+    res.status(200).json(result);
+  } catch (error) {
+    throw new createError(401, error.message);
+  }
+})
 module.exports = router;

@@ -38,7 +38,7 @@ module.exports = {
     // entity {username, password}, orgirinal password
     const row = await db.load(
       `select * from customer where username = "${entity.username}"`
-    );
+    );   
     const { password } = row[0];
     if (bcrypt.compareSync(entity.password, password)) return row[0];
     return false;
@@ -82,5 +82,14 @@ module.exports = {
     } catch (error) {
       return error;
     }
+  },
+  updatePassword: async (newPassword, username) => {  
+
+    try {
+      rows = await db.load(`update customer set password ="${newPassword}" where username ="${username}" `);
+    } catch (error) {
+      return error;
+    }
+    return rows;
   },
 };
