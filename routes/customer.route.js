@@ -300,4 +300,17 @@ router.get('/transactions/receiver', async (req,res) => {
     throw new createError(401, error.message);
   }
 })
+
+router.put('/passwords/ibanking', async (req,res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const username = decode.username;
+  var { oldPassword, newPassword } = req.body;
+  try {
+    const result = await customerModel.updatePassword(oldPassword,newPassword, username);
+    res.status(200).json(result);
+  } catch (error) {
+    throw new createError(401, error.message);
+  }
+})
 module.exports = router;

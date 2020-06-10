@@ -3,9 +3,9 @@ const bcrypt = require("bcryptjs");
 const createError = require("https-error");
 const moment = require("moment");
 
-module.exports = {
+const model = {
   all: (_) => db.load(`select * from customer`),
-  detail: (username) =>
+  detail: async (username) =>
     db.load(`select * from customer where username = "${username}"`),
   add: async (entity) => {
     // table customer {username, password, fullname};
@@ -38,7 +38,7 @@ module.exports = {
     // entity {username, password}, orgirinal password
     const row = await db.load(
       `select * from customer where username = "${entity.username}"`
-    );
+    );   
     const { password } = row[0];
     if (bcrypt.compareSync(entity.password, password)) return row[0];
     return false;
@@ -83,4 +83,23 @@ module.exports = {
       return error;
     }
   },
+  updatePassword: async (oldPassword, newPassword, username) => {  
+    
+    const info = await model.detail(username);   
+     
+    if (bcrypt.compareSync(oldPassword, info[0].password)) {  
+      if (newPassword) newPassword = bcrypt.hashSync(newPassword, 8);
+    } 
+    else {
+      throw new createError(401, 'Old password is wrong');
+    }
+    try {
+      rows = await db.load(`update customer set password ="${newPassword}" where username ="${username}" `);
+    } catch (error) {
+      return error;
+    }
+    return rows;
+  },
 };
+
+module.exports = model;

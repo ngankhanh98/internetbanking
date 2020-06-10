@@ -1,7 +1,7 @@
 const db = require("../utils/db");
 const createError = require("https-error");
 
-module.exports = {
+const model = {
     add: async (entity) =>{
         try {
             return await db.add(entity, 'beneficiaries');
@@ -17,3 +17,4 @@ module.exports = {
         }
     }
 };
+module.exports = model;
