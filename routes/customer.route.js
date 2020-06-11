@@ -28,7 +28,20 @@ router.get("/accounts/:type", async (req, res) => {
   const decode = jwt.decode(token);
   const { username } = decode;
   try {
-    const rows = await customerModel.getAccounts(username, type);
+    const rows = await customerModel.getAccountsByType(username, type);
+    res.status(200).json(rows);
+  } catch (error) {
+    res.status(401).json(error);
+  }
+});
+
+router.get("/accounts", async (req, res) => {
+  // req.headers {x-access-token}
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+  try {
+    const rows = await customerModel.getAccounts(username);
     res.status(200).json(rows);
   } catch (error) {
     res.status(401).json(error);

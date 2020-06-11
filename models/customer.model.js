@@ -73,7 +73,7 @@ const model = {
       return error;
     }
   },
-  getAccounts: async (username, type) => {
+  getAccountsByType: async (username, type) => {
     try {
       return await db.load(
         `select * from account where customer_username = '${username}' and type = ${type}`
