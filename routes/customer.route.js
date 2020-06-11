@@ -21,13 +21,14 @@ router.get("/", async (req, res) => {
   res.status(200).json(rows);
 });
 
-router.get("/accounts", async (req, res) => {
+router.get("/accounts/:type", async (req, res) => {
+  const type = req.params["type"];
   // req.headers {x-access-token}
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
   const { username } = decode;
   try {
-    const rows = await customerModel.getAccounts(username);
+    const rows = await customerModel.getAccounts(username, type);
     res.status(200).json(rows);
   } catch (error) {
     res.status(401).json(error);
@@ -269,48 +270,62 @@ router.post("/update", async (req, res) => {
   }
 });
 
-router.get('/beneficiaries', async (req,res) => {
+router.get("/beneficiaries", async (req, res) => {
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
 
   const username = decode.username;
+  var rows;
   try {
-    const result = await beneficiaryModel.getAllByUsername(username);
-    res.status(200).json(result);
+    rows = await beneficiaryModel.getAllByUsername(username);
+    // res.status(200).json(result);
   } catch (error) {
     throw new createError(401, error.message);
   }
-})
+  let key = 1;
+  const result = rows.map(
+    (elem, key) => (new_elem = { ...elem, key: key + 1 })
+  );
+  res.status(200).json(result);
+});
 
-router.get('/transactions/transfer', async (req,res) => {
+router.get("/transactions/transfer", async (req, res) => {
   const account_number = req.body.account_number;
   try {
-    const result = await transactionModel.getTransferByAccNumber(account_number);
+    const result = await transactionModel.getTransferByAccNumber(
+      account_number
+    );
     res.status(200).json(result);
   } catch (error) {
     throw new createError(401, error.message);
   }
-})
-router.get('/transactions/receiver', async (req,res) => {
+});
+router.get("/transactions/receiver", async (req, res) => {
   const account_number = req.body.account_number;
   try {
-    const result = await transactionModel.getReceiverByAccNumber(account_number);
+    const result = await transactionModel.getReceiverByAccNumber(
+      account_number
+    );
     res.status(200).json(result);
   } catch (error) {
     throw new createError(401, error.message);
   }
-})
+});
 
-router.put('/passwords/ibanking', async (req,res) => {
+router.put("/passwords/ibanking", async (req, res) => {
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
   const username = decode.username;
   var { oldPassword, newPassword } = req.body;
   try {
-    const result = await customerModel.updatePassword(oldPassword,newPassword, username);
+    const result = await customerModel.updatePassword(
+      oldPassword,
+      newPassword,
+      username
+    );
     res.status(200).json(result);
   } catch (error) {
     throw new createError(401, error.message);
   }
-})
+});
 module.exports = router;

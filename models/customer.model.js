@@ -38,7 +38,7 @@ const model = {
     // entity {username, password}, orgirinal password
     const row = await db.load(
       `select * from customer where username = "${entity.username}"`
-    );   
+    );
     const { password } = row[0];
     if (bcrypt.compareSync(entity.password, password)) return row[0];
     return false;
@@ -73,9 +73,18 @@ const model = {
       return error;
     }
   },
+  getAccounts: async (username, type) => {
+    try {
+      return await db.load(
+        `select * from account where customer_username = '${username}' and type = ${type}`
+      );
+    } catch (error) {
+      return error;
+    }
+  },
   getByAccountNumber: async (account_number) => {
     try {
-      const rows =  await db.load(
+      const rows = await db.load(
         `select * from customer, account where customer.username = account.customer_username and account.account_number = '${account_number}'`
       );
       return rows[0];
@@ -83,18 +92,18 @@ const model = {
       return error;
     }
   },
-  updatePassword: async (oldPassword, newPassword, username) => {  
-    
-    const info = await model.detail(username);   
-     
-    if (bcrypt.compareSync(oldPassword, info[0].password)) {  
+  updatePassword: async (oldPassword, newPassword, username) => {
+    const info = await model.detail(username);
+
+    if (bcrypt.compareSync(oldPassword, info[0].password)) {
       if (newPassword) newPassword = bcrypt.hashSync(newPassword, 8);
-    } 
-    else {
-      throw new createError(401, 'Old password is wrong');
+    } else {
+      throw new createError(401, "Old password is wrong");
     }
     try {
-      rows = await db.load(`update customer set password ="${newPassword}" where username ="${username}" `);
+      rows = await db.load(
+        `update customer set password ="${newPassword}" where username ="${username}" `
+      );
     } catch (error) {
       return error;
     }
