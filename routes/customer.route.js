@@ -66,7 +66,7 @@ router.post("/add-beneficiary", async (req, res) => {
         break;
       case "s2qbank":
         beneficiary = await s2qbank.getAccountInfo(beneficiary_account);
-        ref_name = beneficiary.username;
+        ref_name = beneficiary.full_name;
         break;
       default:
         beneficiary = await customerModel.getByAccountNumber(beneficiary_account);
@@ -215,6 +215,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
 
 router.post("/interbank-transfer-money", async (req, res) => {
   const {
+    note,
     depositor,
     receiver,
     amount,
@@ -282,11 +283,11 @@ router.post("/interbank-transfer-money", async (req, res) => {
     switch (partner_bank) {
       case "mpbank":
         await mpbank.transferMoney(receiver, receiver_get);
-        console.log("mpbank 200");
         break;
       default:
-        await s2qbank.transferMoney(receiver, receiver_get);
-        console.log("s2qbank 200");
+        const entity = { ...req.body, fee };
+        console.log(entity);
+        await s2qbank.transferMoney(depositor, receiver, receiver_get, note);
         break;
     }
   } catch (error) {
