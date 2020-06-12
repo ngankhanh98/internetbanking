@@ -47,7 +47,7 @@ router.post("/request", async (req, res) => {
   var duration = moment.duration(now.diff(_timestamp)).asSeconds();
   var isTimestampValid = duration <= time_delay ? true : false;
   if (!isTimestampValid) {
-    res.status(401).send("Request expired");
+    res.status(401).json({"msg":"Request expired"});
     throw new createError(401, "Request expired");
   }
 
@@ -62,7 +62,7 @@ router.post("/request", async (req, res) => {
   if (
     !isEqual(JSON.stringify(decryptedData.data.data), JSON.stringify(data.data))
   ) {
-    res.status(401).send("Unoriginal package warning");
+    res.status(401).json({"msg":"Unoriginal package warning"});
     throw new createError(401, "Unoriginal package warning");
   }
 
@@ -95,7 +95,7 @@ router.post("/request", async (req, res) => {
           data.target_account
         );
         if (isAccountValid.length === 0) {
-          res.status(403).send("Cannot find such account");
+          res.status(403).json({"msg":"Cannot find such account"});
           throw new createError(403, "Cannot find such account");
         }
 
@@ -108,12 +108,12 @@ router.post("/request", async (req, res) => {
         if (ret) {
           return res.status(200).json({info, sign});
         } else if (ret === false) {
-          res.status(403).send("Not enough money to process transaction");
+          res.status(403).json({"msg":"Not enough money to process transaction"});
           throw new createError(403, "Not enough money to process transaction");
         }
         
       } else {
-        res.status(401).send("Signature could not be verified");
+        res.status(401).json({"msg":"Signature could not be verified"});
         throw new createError(401, "Signature could not be verified");
       }
       
@@ -127,7 +127,7 @@ router.post("/request", async (req, res) => {
     );
 
     if (rows.length === 0) {
-      res.status(401).send("Cannot find information of such account");
+      res.status(401).json({"msg":"Cannot find information of such account"});
       throw new createError(401, "Cannot find information of such account");
     }
 

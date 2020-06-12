@@ -3,10 +3,10 @@ const bcrypt = require("bcryptjs");
 const createError = require("https-error");
 const moment = require("moment");
 
-module.exports = {
+const model = {
   all: (_) => db.load(`select * from customer`),
-  detail: (username) =>
-    db.load(`select username, fullname, id from customer where username = "${username}"`),
+  detail: async (username) =>
+    db.load(`select * from customer where username = "${username}"`),
   add: async (entity) => {
     // table customer {username, password, fullname};
     // entity {username, password, fullname}
@@ -64,7 +64,51 @@ module.exports = {
 
     return false;
   },
-  getAllAccount: async (username) =>{
-    return await db.load(`select account.* where customer_username = '${username}'`)
-  }
+  getAccounts: async (username) => {
+    try {
+      return await db.load(
+        `select * from account where customer_username = '${username}'`
+      );
+    } catch (error) {
+      return error;
+    }
+  },
+  getAccountsByType: async (username, type) => {
+    try {
+      return await db.load(
+        `select * from account where customer_username = '${username}' and type = ${type}`
+      );
+    } catch (error) {
+      return error;
+    }
+  },
+  getByAccountNumber: async (account_number) => {
+    try {
+      const rows = await db.load(
+        `select * from customer, account where customer.username = account.customer_username and account.account_number = '${account_number}'`
+      );
+      return rows[0];
+    } catch (error) {
+      return error;
+    }
+  },
+  updatePassword: async (oldPassword, newPassword, username) => {
+    const info = await model.detail(username);
+
+    if (bcrypt.compareSync(oldPassword, info[0].password)) {
+      if (newPassword) newPassword = bcrypt.hashSync(newPassword, 8);
+    } else {
+      throw new createError(401, "Old password is wrong");
+    }
+    try {
+      rows = await db.load(
+        `update customer set password ="${newPassword}" where username ="${username}" `
+      );
+    } catch (error) {
+      return error;
+    }
+    return rows;
+  },
 };
+
+module.exports = model;
