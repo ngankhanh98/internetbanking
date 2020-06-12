@@ -55,21 +55,21 @@ router.post("/add-beneficiary", async (req, res) => {
   const decode = jwt.decode(token);
   const { username } = decode;
 
-  const { account_number, name, bank } = req.body;
+  const { beneficiary_account, name, bank } = req.body;
 
   var beneficiary, ref_name;
   try {
     switch (bank) {
       case "mpbank":
-        beneficiary = await mpbank.getAccountInfo(account_number);
+        beneficiary = await mpbank.getAccountInfo(beneficiary_account);
         ref_name = beneficiary.result;
         break;
       case "s2qbank":
-        beneficiary = await s2qbank.getAccountInfo(account_number);
-        ref_name = beneficiary.username;
+        beneficiary = await s2qbank.getAccountInfo(beneficiary_account);
+        ref_name = beneficiary.full_name;
         break;
       default:
-        beneficiary = await customerModel.getByAccountNumber(account_number);
+        beneficiary = await customerModel.getByAccountNumber(beneficiary_account);
         ref_name = beneficiary.fullname;
         break;
     }
@@ -88,7 +88,7 @@ router.post("/add-beneficiary", async (req, res) => {
   try {
     const ret = await beneficiaryModel.add({
       customer_username: username,
-      beneficiary_account: account_number,
+      beneficiary_account: beneficiary_account,
       beneficiary_name: _name,
       partner_bank: bank,
     });
@@ -96,6 +96,62 @@ router.post("/add-beneficiary", async (req, res) => {
   } catch (error) {
     res.status(401).json(error);
   }
+});
+
+router.post("/update-beneficiary", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+
+  // const { beneficiary_account, new_name } = req.body;
+  const { array } = req.body;
+  const del_benes = array.filter((els) => (els.type == "del"));
+  const update_benes = array.filter((els) => (els.type == "update"));
+  console.log(del_benes);
+
+
+
+  const del_ret = await Promise.all(del_benes.map(async (el) => {
+    const { beneficiary_account } = el;
+    try {
+      ret = await beneficiaryModel.del(username, beneficiary_account);
+      console.log(`🎉 Succeed delete ${beneficiary_account}`);
+    } catch (error) {
+      console.log(error);
+      res.status(401).json(error);
+    }
+  }));
+  // (async () => del_benes.map(async (el) => {
+  //   const { beneficiary_account } = el;
+  //   try {
+  //     ret = await beneficiaryModel.del(username, beneficiary_account);
+  //     console.log(`🎉 Succeed delete ${beneficiary_account}`);
+  //   } catch (error) {
+  //     console.log(error);
+  //     res.status(401).json(error);
+  //   }
+  // }));
+
+
+
+  const update_ret = await Promise.all(update_benes.map(async (el) => {
+    const { beneficiary_account, new_name } = el;
+    try {
+      const ret = await beneficiaryModel.update(
+        username,
+        beneficiary_account,
+        new_name
+      );
+      console.log(`🎉 Succeed update ${beneficiary_account}`);
+    } catch (error) {
+      console.log(error);
+      res.status(401).json(error);
+    }
+  }));
+
+  res.status(200).json({ msg: "Changes saved" });
+
+
 });
 
 router.post("/intrabank-transfer-money", async (req, res) => {
@@ -159,6 +215,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
 
 router.post("/interbank-transfer-money", async (req, res) => {
   const {
+    note,
     depositor,
     receiver,
     amount,
@@ -226,11 +283,11 @@ router.post("/interbank-transfer-money", async (req, res) => {
     switch (partner_bank) {
       case "mpbank":
         await mpbank.transferMoney(receiver, receiver_get);
-        console.log("mpbank 200");
         break;
       default:
-        await s2qbank.transferMoney(receiver, receiver_get);
-        console.log("s2qbank 200");
+        const entity = { ...req.body, fee };
+        console.log(entity);
+        await s2qbank.transferMoney(depositor, receiver, receiver_get, note);
         break;
     }
   } catch (error) {
