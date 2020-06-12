@@ -149,20 +149,6 @@ router.post("/update-beneficiary", async (req, res) => {
     }
   }));
 
-  // (async () => await update_benes.map(async (el) => {
-  //   const { beneficiary_account, new_name } = el;
-  //   try {
-  //     const ret = await beneficiaryModel.update(
-  //       username,
-  //       beneficiary_account,
-  //       new_name
-  //     );
-  //     console.log(`🎉 Succeed update ${beneficiary_account}`);
-  //   } catch (error) {
-  //     console.log(error);
-  //     res.status(401).json(error);
-  //   }
-  // }));
   res.status(200).json({ msg: "Changes saved" });
 
 
