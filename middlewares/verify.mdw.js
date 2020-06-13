@@ -40,7 +40,7 @@ module.exports = {
       const token = authenticator.generate(secrect);
       mailOptions= {
         ...mailOptions,
-        html: '<p>The email from nklbank</b><ul><li>Email:' + email + '</li><li>Your OTP:' + token + '</li></ul>',
+        html: '<p>The email from nklbank</b><ul><li>Email:' + email + '</li><li>Your OTP:' + token + '</li><li>This code will expire 3 minutes after this email was send</li></ul>',
         to: email,
       }
       
