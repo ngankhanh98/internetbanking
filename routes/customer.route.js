@@ -11,7 +11,7 @@ const s2qbank = require("../middlewares/s2qbank.mdw");
 const moment = require("moment");
 const router = express.Router();
 
-const { tariff } = require("../config/default.json");
+const { bank } = require("../config/default.json");
 
 router.get("/", async (req, res) => {
   // req.headers {x-access-token}
@@ -19,7 +19,10 @@ router.get("/", async (req, res) => {
   const decode = jwt.decode(token);
   const { username } = decode;
   const rows = await customerModel.detail(username);
-  res.status(200).json(rows);
+  const result = rows.map((row) =>
+    row.password ? { ...row, password: null } : row
+  );
+  res.status(200).json(result);
 });
 
 router.get("/accounts/:type", async (req, res) => {
@@ -213,7 +216,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     partner_bank,
     charge_include,
   } = req.body;
-  const fee = tariff.transfer_fee;
+  const fee = bank.transfer_fee;
   const depositor_pay = charge_include ? amount + fee : amount;
   const receiver_get = charge_include ? amount : amount - fee;
   const transaction = { ...req.body, amount: depositor_pay };
@@ -294,32 +297,18 @@ router.post("/interbank-transfer-money", async (req, res) => {
     return error;
   }
 
-  res.status(200).json({
-    msg: `Transfer money succeed. Transaction stored at transaction_id = ${transaction_id}`,
-  });
-});
-
-// permission: personels only
-router.post("/add", async (req, res) => {
-  var result;
-
-  var { fullname } = req.body;
-  fullname = fullname
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toUpperCase();
-  const standarlize = (req_body) => ({
-    ...req_body,
-    fullname: fullname, // Lê Long Đỉnh --> LE LONG DINH
-  });
-  const entity = standarlize(req.body);
-  console.log(`add customer: ${JSON.stringify(entity)}`);
-  try {
-    result = await customerModel.add(entity);
-  } catch (error) {
-    throw new createError(401, error.message);
+  const response = {
+    transaction_id,
+    depositor,
+    receiver, 
+    amount,
+    net_receiving: receiver_get,
+    note,
+    partner_bank,
+    charge_include,
+    fee
   }
-  res.status(201).json(result);
+  res.status(200).json(response);
 });
 
 // permission: personels, customers
