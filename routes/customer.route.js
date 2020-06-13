@@ -391,28 +391,31 @@ router.get("/debts", async (req, res) => {
   const username = decode.username;
   var debts = [];
   try {
-
     const accounts = await customerModel.getAccounts(username);
     console.log("account", accounts);
-    await Promise.all(accounts.map(async (acc) => {
-      const creditors = await debtModel.allByCrediter(acc.account_number);
-      const payers = await debtModel.allByPayer(acc.account_number);
+    await Promise.all(
+      accounts.map(async (acc) => {
+        const creditors = await debtModel.allByCrediter(acc.account_number);
+        const payers = await debtModel.allByPayer(acc.account_number);
 
-      var accInfo = { creditors: [], payers: [] }
+        var accInfo = { creditors: [], payers: [] };
 
-      creditors.map(creditor => { accInfo.creditors.push(creditor) });
-      payers.map(payer => { accInfo.payers.push(payer) })
+        creditors.map((creditor) => {
+          accInfo.creditors.push(creditor);
+        });
+        payers.map((payer) => {
+          accInfo.payers.push(payer);
+        });
 
-      if (creditors.length > 0 || payers.length > 0) {
-        debts.push(accInfo);
-      }
-
-    }));
+        if (creditors.length > 0 || payers.length > 0) {
+          debts.push(accInfo);
+        }
+      })
+    );
     res.status(200).json(debts);
   } catch (error) {
     throw new createError(401, error.message);
-
-  }  
+  }
 });
 
 router.post("/debts", async (req, res) => {
@@ -423,6 +426,20 @@ router.post("/debts", async (req, res) => {
   const debt = { ...req.body };
   try {
     const result = await debtModel.add(debt);
+    res.status(200).json(result);
+  } catch (error) {
+    throw error;
+  }
+});
+
+router.post("/update-debts", async (req, res) => {
+  const { id } = req.body;
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+
+  try {
+    const result = await debtModel.update(id);
     res.status(200).json(result);
   } catch (error) {
     throw error;
