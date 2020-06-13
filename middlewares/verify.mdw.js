@@ -33,14 +33,14 @@ module.exports = {
     }
 
   },
-  generateOTP: async (username, email) => {
+  generateOTP: async (secrect, email) => {
     authenticator.options = { step: 180 }
     try {
-      console.log(username);
-      const token = authenticator.generate(username);
+      console.log(secrect);
+      const token = authenticator.generate(secrect);
       mailOptions= {
         ...mailOptions,
-        html: '<p>The email from nklbank</b><ul><li>Username:' + username + '</li><li>Email:' + email + '</li><li>Your OTP:' + token + '</li></ul>',
+        html: '<p>The email from nklbank</b><ul><li>Email:' + email + '</li><li>Your OTP:' + token + '</li></ul>',
         to: email,
       }
       
@@ -53,10 +53,10 @@ module.exports = {
     }
 
   },
-  verifyOTP(token, username) {
+  verifyOTP(token, secrect) {
     try {
 
-      const isValid = authenticator.check(token, username);
+      const isValid = authenticator.check(token, secrect);
       if (!isValid) throw new createError(401, "OTP is not valid");
       return isValid;
 
