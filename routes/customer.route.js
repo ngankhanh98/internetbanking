@@ -301,14 +301,14 @@ router.post("/interbank-transfer-money", async (req, res) => {
   const response = {
     transaction_id,
     depositor,
-    receiver, 
+    receiver,
     amount,
     net_receiving: receiver_get,
     note,
     partner_bank,
     charge_include,
-    fee
-  }
+    fee,
+  };
   res.status(200).json(response);
 });
 
@@ -385,28 +385,37 @@ router.put("/passwords/ibanking", async (req, res) => {
   }
 });
 
-router.get("/debts", async( req, res) => {
+router.get("/debts", async (req, res) => {
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
   const username = decode.username;
   console.log("hehe");
-  var debts =[ ];
-   try {
-
+  var debts = [];
+  try {
     const accounts = await customerModel.getAccounts();
     console.log("account", accounts);
-    accounts.map(async(acc) => { 
+    accounts.map(async (acc) => {
       debts = [...debts, acc.account_number];
-      const creditors =  await debtModel.allByCrediter(acc.account_number);
+      const creditors = await debtModel.allByCrediter(acc.account_number);
       const payers = await debtModel.allByPayer(acc.account_number);
-      
-    })
+    });
     console.log(debts);
-    }
-    catch (error) {
-      throw new createError(401, error.message);
-      
-    }
+  } catch (error) {
+    throw new createError(401, error.message);
+  }
+});
 
-})
+router.post("/debts", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+
+  const debt = { ...req.body };
+  try {
+    const result = await debtModel.add(debt);
+    res.status(200).json(result);
+  } catch (error) {
+    throw error;
+  }
+});
 module.exports = router;
