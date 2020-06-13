@@ -53,7 +53,17 @@ router.post("/add-customer", async (req, res) => {
 
 router.post("/add-account", async (req, res) => {
   // const { account, type, customer_username } = req.body;
+
   const entity = { ...req.body };
+  const { customer_username } = entity;
+
+  try {
+    const rows = await customerModel.detail(customer_username);
+    if (rows.length === 0) res.status(403).json({ msg: "Customer not exist" });
+  } catch (error) {
+    throw error;
+  }
+
   try {
     const ret = await accountModel.add(entity);
     res.status(200).json(ret);
