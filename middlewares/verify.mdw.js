@@ -5,15 +5,15 @@ const { authenticator } = require('otplib');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  service: 'yahoo',
+  service: 'gmail',
   auth: {
-    user: 'nklbank@yahoo.com',
+    user: 'nkl.banking.14@gmail.com',
     pass: '&pwcdpGgP+A#yv3d'
   }
 });
 
 var mailOptions = {
-  from: 'nklbank@yahoo.com',
+  from: 'nkl.banking.14k@gmail.com',
   to: '',
   subject: 'Verify your OTP',
   text: 'That was easy!'
@@ -33,24 +33,19 @@ module.exports = {
     }
 
   },
-  generateOTP: (username, email) => {
+  generateOTP: async (username, email) => {
     authenticator.options = { step: 180 }
     try {
+      console.log(username);
       const token = authenticator.generate(username);
-      console.log(token);
       mailOptions= {
         ...mailOptions,
         html: '<p>The email from nklbank</b><ul><li>Username:' + username + '</li><li>Email:' + email + '</li><li>Your OTP:' + token + '</li></ul>',
         to: email,
       }
       
-      transporter.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.error(error);
-        } else {
-          console.log('Email sent: ' + info.response);
-        }
-      });
+      const {error, info} =  await transporter.sendMail(mailOptions);
+      if (error) throw error;      
       return token;
     }
     catch (err) {

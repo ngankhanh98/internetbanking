@@ -68,18 +68,19 @@ const generateToken = (username) => {
   return token;
 };
 
-router.get('/otp', (req,res) => {
+router.get('/otp',async (req,res) => {
   const token = req.headers["x-access-token"];
   
-  const email = req.params.email;
   const decode = jwt.decode(token);
   const username = decode.username;
+  const row = await customerModel.detail(username);
+  const email = row[0].email;
   try{
 
-    const otp =  verify.generateOTP(username,email); // time remaining is 180
+    const otp = await verify.generateOTP(username,email); // time remaining is 180
     res.status(200).json({msg: "Create otp successful"});
   } catch (err){
-    res.status(404).json({msg: err.message})
+    res.status(401).json({msg: err.message})
   }
 })
 
