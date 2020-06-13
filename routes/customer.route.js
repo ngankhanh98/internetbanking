@@ -410,7 +410,7 @@ router.get("/debts", async (req, res) => {
     }));
     res.status(200).json(debts);
   } catch (error) {
-    throw new createError(401, error.message);
+    throw new createError(400, error.message);
 
   }  
 });
@@ -428,4 +428,22 @@ router.post("/debts", async (req, res) => {
     throw error;
   }
 });
+
+router.delete("/debts", async (req, res)=> {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+
+  const id = req.body.id;
+  
+  try {
+    const result = await debtModel.del(id);
+    console.log(result);
+    res.status(204).json();
+  }
+  catch (err){
+    throw err;
+  }
+  
+})
 module.exports = router;
