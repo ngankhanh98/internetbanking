@@ -71,11 +71,12 @@ const generateToken = (username) => {
 router.get('/otp', (req,res) => {
   const token = req.headers["x-access-token"];
   
+  const email = req.params.email;
   const decode = jwt.decode(token);
   const username = decode.username;
   try{
 
-    const otp =  verify.generateOTP(username); // time remaining is 180
+    const otp =  verify.generateOTP(username,email); // time remaining is 180
     res.status(200).json({msg: "Create otp successful"});
   } catch (err){
     res.status(404).json({msg: err.message})
@@ -84,7 +85,6 @@ router.get('/otp', (req,res) => {
 
 router.post('/otp', (req,res)=>{
   const token = req.headers["x-access-token"];
-  
   const decode = jwt.decode(token);
   const username = decode.username;
   const otp = req.body.otp
