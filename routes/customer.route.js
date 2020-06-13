@@ -19,7 +19,10 @@ router.get("/", async (req, res) => {
   const decode = jwt.decode(token);
   const { username } = decode;
   const rows = await customerModel.detail(username);
-  res.status(200).json(rows);
+  const result = rows.map((row) =>
+    row.password ? { ...row, password: null } : row
+  );
+  res.status(200).json(result);
 });
 
 router.get("/accounts/:type", async (req, res) => {
@@ -297,29 +300,6 @@ router.post("/interbank-transfer-money", async (req, res) => {
   res.status(200).json({
     msg: `Transfer money succeed. Transaction stored at transaction_id = ${transaction_id}`,
   });
-});
-
-// permission: personels only
-router.post("/add", async (req, res) => {
-  var result;
-
-  var { fullname } = req.body;
-  fullname = fullname
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toUpperCase();
-  const standarlize = (req_body) => ({
-    ...req_body,
-    fullname: fullname, // Lê Long Đỉnh --> LE LONG DINH
-  });
-  const entity = standarlize(req.body);
-  console.log(`add customer: ${JSON.stringify(entity)}`);
-  try {
-    result = await customerModel.add(entity);
-  } catch (error) {
-    throw new createError(401, error.message);
-  }
-  res.status(201).json(result);
 });
 
 // permission: personels, customers
