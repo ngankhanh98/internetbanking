@@ -10,7 +10,7 @@ const { account_len } = bank;
 
 router.post("/add-customer", async (req, res) => {
   var { fullname, username } = req.body;
-  var result; 
+  var result;
 
   fullname = fullname
     .normalize("NFD")
@@ -32,19 +32,23 @@ router.post("/add-customer", async (req, res) => {
     throw new createError(401, error.message);
   }
 
-  // genenerate and add a new random account respectively
+  // genenerate and add a new random account to table `account`
   const account = {
     account_number: randomAccountNum(),
-    type: 0,  // tai khoan thanh toan default
-    customer_username: username
-  }
+    type: 0, // tai khoan thanh toan default
+    customer_username: username,
+  };
   try {
     const ret = await accountModel.add(account);
-    result = {}
+    const new_account = await accountModel.getByAccNumber(
+      account.account_number
+    );
+
+    result = { ...result, account: { ...new_account } };
   } catch (error) {
     throw new createError(401, error.message);
   }
-
+  res.status(200).json(result);
 });
 
 router.post("/add-account", async (req, res) => {
@@ -69,4 +73,3 @@ const randomAccountNum = () => {
 };
 
 module.exports = router;
-
