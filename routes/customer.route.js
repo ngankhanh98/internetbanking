@@ -307,8 +307,8 @@ router.post("/interbank-transfer-money", async (req, res) => {
     note,
     partner_bank,
     charge_include,
-    fee
-  }
+    fee,
+  };
   res.status(200).json(response);
 });
 
@@ -412,7 +412,20 @@ router.get("/debts", async (req, res) => {
   } catch (error) {
     throw new createError(401, error.message);
 
-  }
+  }  
+});
 
-})
+router.post("/debts", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+
+  const debt = { ...req.body };
+  try {
+    const result = await debtModel.add(debt);
+    res.status(200).json(result);
+  } catch (error) {
+    throw error;
+  }
+});
 module.exports = router;
