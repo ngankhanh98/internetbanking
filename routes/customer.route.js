@@ -3,14 +3,16 @@ const customerModel = require("../models/customer.model");
 const accountModel = require("../models/account.model");
 const beneficiaryModel = require("../models/beneficiaries.model");
 const transactionModel = require("../models/transaction.model");
+const debtModel = require("../models/debt.model");
 const createError = require("https-error");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mpbank = require("../middlewares/mpbank.mdw");
 const s2qbank = require("../middlewares/s2qbank.mdw");
+const moment = require("moment");
 const router = express.Router();
 
-const { tariff } = require("../config/default.json");
+const { bank } = require("../config/default.json");
 
 router.get("/", async (req, res) => {
   // req.headers {x-access-token}
@@ -18,7 +20,10 @@ router.get("/", async (req, res) => {
   const decode = jwt.decode(token);
   const { username } = decode;
   const rows = await customerModel.detail(username);
-  res.status(200).json(rows);
+  const result = rows.map((row) =>
+    row.password ? { ...row, password: null } : row
+  );
+  res.status(200).json(result);
 });
 
 router.get("/accounts/:type", async (req, res) => {
@@ -55,21 +60,23 @@ router.post("/add-beneficiary", async (req, res) => {
   const decode = jwt.decode(token);
   const { username } = decode;
 
-  const { account_number, name, bank } = req.body;
+  const { beneficiary_account, name, bank } = req.body;
 
   var beneficiary, ref_name;
   try {
     switch (bank) {
       case "mpbank":
-        beneficiary = await mpbank.getAccountInfo(account_number);
+        beneficiary = await mpbank.getAccountInfo(beneficiary_account);
         ref_name = beneficiary.result;
         break;
       case "s2qbank":
-        beneficiary = await s2qbank.getAccountInfo(account_number);
-        ref_name = beneficiary.username;
+        beneficiary = await s2qbank.getAccountInfo(beneficiary_account);
+        ref_name = beneficiary.full_name;
         break;
       default:
-        beneficiary = await customerModel.getByAccountNumber(account_number);
+        beneficiary = await customerModel.getByAccountNumber(
+          beneficiary_account
+        );
         ref_name = beneficiary.fullname;
         break;
     }
@@ -88,7 +95,7 @@ router.post("/add-beneficiary", async (req, res) => {
   try {
     const ret = await beneficiaryModel.add({
       customer_username: username,
-      beneficiary_account: account_number,
+      beneficiary_account: beneficiary_account,
       beneficiary_name: _name,
       partner_bank: bank,
     });
@@ -98,9 +105,53 @@ router.post("/add-beneficiary", async (req, res) => {
   }
 });
 
+router.post("/update-beneficiary", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+
+  // const { beneficiary_account, new_name } = req.body;
+  const { array } = req.body;
+  const del_benes = array.filter((els) => els.type == "del");
+  const update_benes = array.filter((els) => els.type == "update");
+  console.log(del_benes);
+
+  const del_ret = await Promise.all(
+    del_benes.map(async (el) => {
+      const { beneficiary_account } = el;
+      try {
+        ret = await beneficiaryModel.del(username, beneficiary_account);
+        console.log(`🎉 Succeed delete ${beneficiary_account}`);
+      } catch (error) {
+        console.log(error);
+        res.status(401).json(error);
+      }
+    })
+  );
+  const update_ret = await Promise.all(
+    update_benes.map(async (el) => {
+      const { beneficiary_account, new_name } = el;
+      try {
+        const ret = await beneficiaryModel.update(
+          username,
+          beneficiary_account,
+          new_name
+        );
+        console.log(`🎉 Succeed update ${beneficiary_account}`);
+      } catch (error) {
+        console.log(error);
+        res.status(401).json(error);
+      }
+    })
+  );
+
+  res.status(200).json({ msg: "Changes saved" });
+});
+
 router.post("/intrabank-transfer-money", async (req, res) => {
   const { depositor, receiver, amount } = req.body;
   const transaction = req.body;
+  const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
   // check beforehead whether: (1) depositor's balance is available for transfering
   // (2) receiver, in case of adding new (not from the list) is valid.
@@ -118,7 +169,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
   // store transaction
   var transaction_id;
   try {
-    const ret = await transactionModel.add(transaction);
+    const ret = await transactionModel.add({ ...transaction, timestamp });
     transaction_id = ret.insertId;
     console.log(ret);
   } catch (error) {
@@ -159,13 +210,14 @@ router.post("/intrabank-transfer-money", async (req, res) => {
 
 router.post("/interbank-transfer-money", async (req, res) => {
   const {
+    note,
     depositor,
     receiver,
     amount,
     partner_bank,
     charge_include,
   } = req.body;
-  const fee = tariff.transfer_fee;
+  const fee = bank.transfer_fee;
   const depositor_pay = charge_include ? amount + fee : amount;
   const receiver_get = charge_include ? amount : amount - fee;
   const transaction = { ...req.body, amount: depositor_pay };
@@ -226,11 +278,16 @@ router.post("/interbank-transfer-money", async (req, res) => {
     switch (partner_bank) {
       case "mpbank":
         await mpbank.transferMoney(receiver, receiver_get);
-        console.log("mpbank 200");
         break;
       default:
-        await s2qbank.transferMoney(receiver, receiver_get);
-        console.log("s2qbank 200");
+        const ret = await s2qbank.transferMoney(
+          depositor,
+          receiver,
+          receiver_get,
+          note
+        );
+        console.log("response from s2qbank");
+        console.log(ret);
         break;
     }
   } catch (error) {
@@ -241,32 +298,18 @@ router.post("/interbank-transfer-money", async (req, res) => {
     return error;
   }
 
-  res.status(200).json({
-    msg: `Transfer money succeed. Transaction stored at transaction_id = ${transaction_id}`,
-  });
-});
-
-// permission: personels only
-router.post("/add", async (req, res) => {
-  var result;
-
-  var { fullname } = req.body;
-  fullname = fullname
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toUpperCase();
-  const standarlize = (req_body) => ({
-    ...req_body,
-    fullname: fullname, // Lê Long Đỉnh --> LE LONG DINH
-  });
-  const entity = standarlize(req.body);
-  console.log(`add customer: ${JSON.stringify(entity)}`);
-  try {
-    result = await customerModel.add(entity);
-  } catch (error) {
-    throw new createError(401, error.message);
-  }
-  res.status(201).json(result);
+  const response = {
+    transaction_id,
+    depositor,
+    receiver,
+    amount,
+    net_receiving: receiver_get,
+    note,
+    partner_bank,
+    charge_include,
+    fee,
+  };
+  res.status(200).json(response);
 });
 
 // permission: personels, customers
@@ -339,6 +382,40 @@ router.put("/passwords/ibanking", async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     throw new createError(401, error.message);
+  }
+});
+
+router.get("/debts", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const username = decode.username;
+  console.log("hehe");
+  var debts = [];
+  try {
+    const accounts = await customerModel.getAccounts();
+    console.log("account", accounts);
+    accounts.map(async (acc) => {
+      debts = [...debts, acc.account_number];
+      const creditors = await debtModel.allByCrediter(acc.account_number);
+      const payers = await debtModel.allByPayer(acc.account_number);
+    });
+    console.log(debts);
+  } catch (error) {
+    throw new createError(401, error.message);
+  }
+});
+
+router.post("/debts", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+
+  const debt = { ...req.body };
+  try {
+    const result = await debtModel.add(debt);
+    res.status(200).json(result);
+  } catch (error) {
+    throw error;
   }
 });
 module.exports = router;

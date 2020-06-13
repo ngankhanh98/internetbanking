@@ -4,6 +4,8 @@ const createError = require("https-error");
 const jwt = require("jsonwebtoken");
 const ranToken = require("rand-token");
 const { auth } = require("../config/default.json");
+const verify = require('../middlewares/verify.mdw');
+const { route } = require("./customer.route");
 
 const router = express.Router();
 
@@ -65,4 +67,38 @@ const generateToken = (username) => {
   });
   return token;
 };
+
+router.get('/otp',async (req,res) => {
+  const token = req.headers["x-access-token"];
+  
+  const decode = jwt.decode(token);
+  const username = decode.username;
+  const row = await customerModel.detail(username);
+  const email = row[0].email;
+  try{
+
+    const otp = await verify.generateOTP(username,email); // time remaining is 180
+    res.status(200).json({msg: "Create otp successful"});
+  } catch (err){
+    res.status(401).json({msg: err.message})
+  }
+})
+
+router.post('/otp', (req,res)=>{
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const username = decode.username;
+  const otp = req.body.otp
+  console.log(username, otp);
+  try {
+
+    verify.verifyOTP(otp, username);
+    res.status(200).json({msg: "OTP is valid" })
+  }
+  catch (err){
+
+    res.status(401).json({msg: err.message})
+  }
+
+})
 module.exports = router;

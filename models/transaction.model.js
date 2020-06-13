@@ -7,14 +7,21 @@ const model = {
     try {
       return await db.load(`select * from transaction where depositor = "${acccount_number}"`)
     } catch (error) {
-      return error
+      throw error
     }
   },
   getReceiverByAccNumber: async (acccount_number) => {
     try {
       return await db.load(`select * from transaction where receiver = "${acccount_number}"`)
     } catch (error) {
-      return error
+      throw error
+    }
+  },
+  getByAccNumber: async(acccount_number)=>{
+    try {
+      
+    } catch (error) {
+      
     }
   }
 };
