@@ -301,7 +301,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
   const response = {
     transaction_id,
     depositor,
-    receiver, 
+    receiver,
     amount,
     net_receiving: receiver_get,
     note,
@@ -385,28 +385,34 @@ router.put("/passwords/ibanking", async (req, res) => {
   }
 });
 
-router.get("/debts", async( req, res) => {
+router.get("/debts", async (req, res) => {
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
   const username = decode.username;
-  console.log("hehe");
-  var debts =[ ];
-   try {
+  var debts = [];
+  try {
 
-    const accounts = await customerModel.getAccounts();
+    const accounts = await customerModel.getAccounts(username);
     console.log("account", accounts);
-    accounts.map(async(acc) => { 
-      debts = [...debts, acc.account_number];
-      const creditors =  await debtModel.allByCrediter(acc.account_number);
+    await Promise.all(accounts.map(async (acc) => {
+      const creditors = await debtModel.allByCrediter(acc.account_number);
       const payers = await debtModel.allByPayer(acc.account_number);
-      
-    })
-    console.log(debts);
-    }
-    catch (error) {
-      throw new createError(401, error.message);
-      
-    }
+
+      var accInfo = { creditors: [], payers: [] }
+
+      creditors.map(creditor => { accInfo.creditors.push(creditor) });
+      payers.map(payer => { accInfo.payers.push(payer) })
+
+      if (creditors.length > 0 || payers.length > 0) {
+        debts.push(accInfo);
+      }
+
+    }));
+    res.status(200).json(debts);
+  } catch (error) {
+    throw new createError(401, error.message);
+
+  }
 
 })
 module.exports = router;
