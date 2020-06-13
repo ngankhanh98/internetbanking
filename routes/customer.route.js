@@ -3,6 +3,7 @@ const customerModel = require("../models/customer.model");
 const accountModel = require("../models/account.model");
 const beneficiaryModel = require("../models/beneficiaries.model");
 const transactionModel = require("../models/transaction.model");
+const debtModel = require("../models/debt.model");
 const createError = require("https-error");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -383,4 +384,10 @@ router.put("/passwords/ibanking", async (req, res) => {
     throw new createError(401, error.message);
   }
 });
+
+router.get("/debts", async( req, res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const username = decode.username;
+})
 module.exports = router;
