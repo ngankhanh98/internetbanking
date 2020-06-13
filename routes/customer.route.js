@@ -389,5 +389,24 @@ router.get("/debts", async( req, res) => {
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
   const username = decode.username;
+  console.log("hehe");
+  var debts =[ ];
+   try {
+
+    const accounts = await customerModel.getAccounts();
+    console.log("account", accounts);
+    accounts.map(async(acc) => { 
+      debts = [...debts, acc.account_number];
+      const creditors =  await debtModel.allByCrediter(acc.account_number);
+      const payers = await debtModel.allByPayer(acc.account_number);
+      
+    })
+    console.log(debts);
+    }
+    catch (error) {
+      throw new createError(401, error.message);
+      
+    }
+
 })
 module.exports = router;
