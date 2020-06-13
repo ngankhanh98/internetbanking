@@ -23,4 +23,5 @@ module.exports = {
       `select fullname, email, account_number, type from customer, account where customer_username = username and account_number = ${accnumber}`
     );
   },
+  add: async (entity) => await db.add(entity, 'account'),
 };
