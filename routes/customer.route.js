@@ -122,7 +122,8 @@ router.post("/update-beneficiary", async (req, res) => {
   const { username } = decode;
 
   // const { beneficiary_account, new_name } = req.body;
-  const { array } = req.body;
+  const array = req.body;
+  console.log(array)
   const del_benes = array.filter((els) => els.type == "del");
   const update_benes = array.filter((els) => els.type == "update");
   console.log(del_benes);
@@ -143,12 +144,12 @@ router.post("/update-beneficiary", async (req, res) => {
   );
   const update_ret = await Promise.all(
     update_benes.map(async (el) => {
-      const { beneficiary_account, new_name } = el;
+      const { beneficiary_account, beneficiary_name } = el;
       try {
         const ret = await beneficiaryModel.update(
           username,
           beneficiary_account,
-          new_name
+          beneficiary_name
         );
         console.log(`🎉 Succeed update ${beneficiary_account}`);
       } catch (error) {
