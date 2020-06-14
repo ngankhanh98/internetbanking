@@ -126,6 +126,8 @@ router.post("/update-beneficiary", async (req, res) => {
   const del_benes = array.filter((els) => els.type == "del");
   const update_benes = array.filter((els) => els.type == "update");
   console.log(del_benes);
+  console.log(update_benes);
+
 
   const del_ret = await Promise.all(
     del_benes.map(async (el) => {
