@@ -123,12 +123,11 @@ router.post("/update-beneficiary", async (req, res) => {
 
   // const { beneficiary_account, new_name } = req.body;
   const array = req.body;
-  console.log(array)
+  console.log(array);
   const del_benes = array.filter((els) => els.type == "del");
   const update_benes = array.filter((els) => els.type == "update");
   console.log(del_benes);
   console.log(update_benes);
-
 
   const del_ret = await Promise.all(
     del_benes.map(async (el) => {
@@ -412,12 +411,14 @@ router.get("/debts", async (req, res) => {
   try {
     const accounts = await customerModel.getAccounts(username);
     console.log("account", accounts);
+    var accInfo = { creditors: [], payers: [] };
+
     await Promise.all(
       accounts.map(async (acc) => {
         const creditors = await debtModel.allByCrediter(acc.account_number);
         const payers = await debtModel.allByPayer(acc.account_number);
 
-        var accInfo = { creditors: [], payers: [] };
+        // var accInfo = { creditors: [], payers: [] };
 
         creditors.map((creditor) => {
           accInfo.creditors.push(creditor);
@@ -426,16 +427,17 @@ router.get("/debts", async (req, res) => {
           accInfo.payers.push(payer);
         });
 
-        if (creditors.length > 0 || payers.length > 0) {
-          debts.push(accInfo);
-        }
+        // if (creditors.length > 0 || payers.length > 0) {
+        //   debts.push(accInfo);
+        // }
       })
     );
-    res.status(200).json(debts);
+    // res.status(200).json(debts);
+    res.status(200).json(accInfo);
+    
   } catch (error) {
     throw new createError(400, error.message);
-
-  }  
+  }
 });
 
 router.post("/debts", async (req, res) => {
@@ -452,19 +454,17 @@ router.post("/debts", async (req, res) => {
   }
 });
 
-router.delete("/debts", async (req, res)=> {
+router.delete("/debts", async (req, res) => {
   const id = req.body.id;
-  
+
   try {
     const result = await debtModel.del(id);
     console.log(result);
     res.status(204).json();
-  }
-  catch (err){
+  } catch (err) {
     throw err;
   }
-  
-})
+});
 
 router.post("/update-debts", async (req, res) => {
   const { id } = req.body;
