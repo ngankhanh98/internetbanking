@@ -364,7 +364,8 @@ router.get("/beneficiaries", async (req, res) => {
 });
 
 router.get("/transactions/transfer", async (req, res) => {
-  const account_number = req.body.account_number;
+  
+  const account_number = req.query.account_number;
   try {
     const result = await transactionModel.getTransferByAccNumber(
       account_number
