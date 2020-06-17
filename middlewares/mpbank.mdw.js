@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const bcrypt = require("bcrypt");
 const openpgp = require("openpgp");
+const createError = require("https-error");
 const config = require("../config/client.mpbank.json");
 
 const { secret, partnercode, passphrase } = config;
@@ -26,10 +27,19 @@ module.exports = {
       headers: headers,
     })
       .then((response) => response.data)
-      .catch((err) => err);
+      .catch((err) => {
+        throw new createError(403, "Account not found in mpbank");
+      });
     return result;
   },
-  transferMoney: async (receiver, money, depositor, note, fee, charge_include) => {
+  transferMoney: async (
+    receiver,
+    money,
+    depositor,
+    note,
+    fee,
+    charge_include
+  ) => {
     await openpgp.initWorker({ path: "openpgp.worker.js" });
     let timeStamp = Date.now();
     let _secret = secret;
@@ -58,7 +68,7 @@ module.exports = {
       content: note,
       typeSend: charge_include,
       fee: fee,
-      nameBank: 'NKLBank',
+      nameBank: "NKLBank",
       accountSender: depositor,
     };
 
@@ -69,6 +79,8 @@ module.exports = {
       headers: headers,
     })
       .then((response) => response.data)
-      .catch((err) => err);
+      .catch((err) => {
+        throw new createError(403, "Account not found in mpbank");
+      });
   },
 };

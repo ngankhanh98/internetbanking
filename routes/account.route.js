@@ -18,11 +18,17 @@ router.post("/", async (req, res) => {
         account_info = await s2qbank.getAccountInfo(account_number);
         break;
       default:
-        account_info = await accountModel.getCustomerInfoByAccNumber(account_number);
+        account_info = await accountModel.getCustomerInfoByAccNumber(
+          account_number
+        );
         break;
     }
-    if (account_info == undefined || account_info.name == "Error")
-      res.status(403).json({ msg: "Not found such account" });
+    if (
+      account_info == undefined ||
+      account_info.name == "Error" ||
+      account_info.length === 0
+    )
+      return res.status(403).json({ msg: "Not found such account" });
   } catch (error) {
     res.status(401).json(error);
   }
