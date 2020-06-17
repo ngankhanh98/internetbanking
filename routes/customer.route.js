@@ -14,6 +14,7 @@ const moment = require("moment");
 const router = express.Router();
 
 const { bank } = require("../config/default.json");
+const { min_transfermoney } = bank;
 
 router.get("/", async (req, res) => {
   // req.headers {x-access-token}
@@ -232,6 +233,11 @@ router.post("/interbank-transfer-money", async (req, res) => {
   const receiver_get = charge_include ? amount : amount - fee;
   const transaction = { ...req.body, amount: depositor_pay };
 
+  // check if amount > min_transfermoney
+  if (amount < min_transfermoney)
+    return res
+      .status(403)
+      .json({ msg: `Transfer money less than minimun ${min_transfermoney}` });
   // check if depositor's balance > money to transfer
   const depositors = await accountModel.getByAccNumber(depositor);
   const { account_balance } = depositors[0];
@@ -240,23 +246,12 @@ router.post("/interbank-transfer-money", async (req, res) => {
   }
 
   // check if receiver valid (in case of add new, not from the list)
-  var interbank_query;
+  var account_info;
   try {
-    switch (partner_bank) {
-      case "mpbank":
-        interbank_query = await mpbank.getAccountInfo(receiver);
-        break;
-      case "s2qbank":
-        interbank_query = await s2qbank.getAccountInfo(receiver);
-        break;
-    }
-    if (interbank_query.name == "Error")
-      // s2qbank throw {Error:"..."}
-      return res.status(403).json({ msg: "Not found such account" });
+    account_info = await partnerbank.getAccountInfo(partner_bank, receiver);
   } catch (error) {
     return res.status(403).json({ msg: error.message });
   }
-
   // store transaction
   var transaction_id;
   try {
@@ -264,7 +259,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     transaction_id = ret.insertId;
     console.log(ret);
   } catch (error) {
-    return res.status(403).json({ msg: error });
+    return res.status(403).json({ msg: "Store transaction fail" });
   }
 
   // procceed draw money
@@ -278,36 +273,52 @@ router.post("/interbank-transfer-money", async (req, res) => {
     await accountModel.drawMoney(_depositor);
   } catch (error) {
     await transactionModel.del(transaction_id);
-    return res.status(403).json({ msg: error });
+    return res.status(403).json({ msg: "Draw money fail" });
   }
 
+  // try {
+  //   switch (partner_bank) {
+  //     case "mpbank":
+  //       await mpbank.transferMoney(
+  //         receiver,
+  //         receiver_get,
+  //         depositor,
+  //         note,
+  //         fee,
+  //         charge_include
+  //       );
+  //       break;
+  //     default:
+  //       const ret = await s2qbank.transferMoney(
+  //         depositor,
+  //         receiver,
+  //         receiver_get,
+  //         note
+  //       );
+  //       console.log(ret);
+  //       break;
+  //   }
+  // } catch (error) {
+  //   await transactionModel.del(transaction_id);
+  //   const revert_depositor = { ..._depositor, transaction_type: "+" };
+  //   await accountModel.drawMoney(revert_depositor);
+  //   return res.status(403).json({ msg: "Transfer money fail" });
+  // }
+
+  const entity = {
+    receiver,
+    depositor,
+    receiver_get,
+    note,
+    fee,
+    charge_include,
+  };
   try {
-    switch (partner_bank) {
-      case "mpbank":
-        await mpbank.transferMoney(
-          receiver,
-          receiver_get,
-          depositor,
-          note,
-          fee,
-          charge_include
-        );
-        break;
-      default:
-        const ret = await s2qbank.transferMoney(
-          depositor,
-          receiver,
-          receiver_get,
-          note
-        );
-        console.log(ret);
-        break;
-    }
+    await partnerbank.transferMoney(partner_bank, entity);
   } catch (error) {
-    await transactionModel.del(transaction_id);
     const revert_depositor = { ..._depositor, transaction_type: "+" };
     await accountModel.drawMoney(revert_depositor);
-    return res.status(403).json({ msg: error });
+    return res.status(403).json({ msg: "Transfer money fail" });
   }
 
   const response = {
