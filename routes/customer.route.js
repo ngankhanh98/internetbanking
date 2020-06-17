@@ -135,7 +135,7 @@ router.post("/update-beneficiary", async (req, res) => {
         console.log(`🎉 Succeed delete ${beneficiary_account}`);
       } catch (error) {
         console.log(error);
-        res.status(401).json(error);
+        return res.status(401).json(error);
       }
     })
   );
@@ -151,7 +151,7 @@ router.post("/update-beneficiary", async (req, res) => {
         console.log(`🎉 Succeed update ${beneficiary_account}`);
       } catch (error) {
         console.log(error);
-        res.status(401).json(error);
+        return res.status(401).json(error);
       }
     })
   );
@@ -171,10 +171,10 @@ router.post("/intrabank-transfer-money", async (req, res) => {
   const receivers = await accountModel.getByAccNumber(receiver);
 
   if (account_balance < amount) {
-    res.status(403).json({ msg: "Account balance not enough" });
+    return res.status(403).json({ msg: "Account balance not enough" });
   }
   if (receivers.length === 0) {
-    res.status(403).json({ msg: "Receiver account not found" });
+    return res.status(403).json({ msg: "Receiver account not found" });
   }
 
   // store transaction
@@ -184,8 +184,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     transaction_id = ret.insertId;
     console.log(ret);
   } catch (error) {
-    console.log(error);
-    return error;
+    return res.status(403).json({ msg: error });
   }
 
   // proceed draw money
@@ -203,7 +202,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await accountModel.drawMoney(_depositor);
   } catch (error) {
     await transactionModel.del(transaction_id);
-    return error;
+    return res.status(403).json({ msg: error });
   }
 
   try {
@@ -212,7 +211,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await transactionModel.del(transaction_id); // delete transaction record
     const revert_depositor = { ..._depositor, transaction_type: "+" }; // revert depositor balance
     await accountModel.drawMoney(revert_depositor);
-    return error;
+    return res.status(403).json({ msg: error });
   }
   res.status(200).json({
     msg: `Transfer money succeed. Transaction stored at transaction_id = ${transaction_id}`,
@@ -237,7 +236,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
   const depositors = await accountModel.getByAccNumber(depositor);
   const { account_balance } = depositors[0];
   if (account_balance < amount) {
-    res.status(403).json({ msg: "Account balance not enough" });
+    return res.status(403).json({ msg: "Account balance not enough" });
   }
 
   // check if receiver valid (in case of add new, not from the list)
@@ -265,8 +264,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     transaction_id = ret.insertId;
     console.log(ret);
   } catch (error) {
-    console.log(error);
-    return error;
+    return res.status(403).json({ msg: error });
   }
 
   // procceed draw money
@@ -280,7 +278,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     await accountModel.drawMoney(_depositor);
   } catch (error) {
     await transactionModel.del(transaction_id);
-    return error;
+    return res.status(403).json({ msg: error });
   }
 
   try {
@@ -309,8 +307,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     await transactionModel.del(transaction_id);
     const revert_depositor = { ..._depositor, transaction_type: "+" };
     await accountModel.drawMoney(revert_depositor);
-    console.log(error);
-    return error;
+    return res.status(403).json({ msg: error });
   }
 
   const response = {
@@ -335,9 +332,9 @@ router.post("/update", async (req, res) => {
   const username = decode.username;
   try {
     const result = await customerModel.update(req.body, username);
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
-    throw new createError(401, error.message);
+    return res.status(403).json({ msg: error });
   }
 });
 
@@ -457,7 +454,7 @@ router.post("/debts", async (req, res) => {
     const result = await debtModel.add(debt);
     res.status(200).json(result);
   } catch (error) {
-    throw error;
+    throw new createError(400, error.message);
   }
 });
 
@@ -469,7 +466,7 @@ router.delete("/debts", async (req, res) => {
     console.log(result);
     res.status(204).json();
   } catch (err) {
-    throw err;
+    throw new createError(400, error.message);
   }
 });
 
@@ -483,7 +480,7 @@ router.post("/update-debts", async (req, res) => {
     const result = await debtModel.update(id);
     res.status(200).json(result);
   } catch (error) {
-    throw error;
+    throw new createError(400, error.message);
   }
 });
 module.exports = router;
