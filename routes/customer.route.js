@@ -237,7 +237,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
   const depositors = await accountModel.getByAccNumber(depositor);
   const { account_balance } = depositors[0];
   if (account_balance < amount) {
-    res.status(403).json({ msg: "Account balance not enough" });
+    return res.status(403).json({ msg: "Account balance not enough" });
   }
 
   // check if receiver valid (in case of add new, not from the list)
@@ -265,8 +265,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     transaction_id = ret.insertId;
     console.log(ret);
   } catch (error) {
-    console.log(error);
-    return error;
+    return res.status(403).json({ msg: error });
   }
 
   // procceed draw money
@@ -280,7 +279,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     await accountModel.drawMoney(_depositor);
   } catch (error) {
     await transactionModel.del(transaction_id);
-    return error;
+    return res.status(403).json({ msg: error });
   }
 
   try {
@@ -309,8 +308,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     await transactionModel.del(transaction_id);
     const revert_depositor = { ..._depositor, transaction_type: "+" };
     await accountModel.drawMoney(revert_depositor);
-    console.log(error);
-    return error;
+    return res.status(403).json({ msg: error });
   }
 
   const response = {
