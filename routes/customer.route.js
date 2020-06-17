@@ -122,12 +122,12 @@ router.post("/update-beneficiary", async (req, res) => {
   const { username } = decode;
 
   // const { beneficiary_account, new_name } = req.body;
-  const { array } = req.body;
+  const array = req.body;
+  console.log(array);
   const del_benes = array.filter((els) => els.type == "del");
   const update_benes = array.filter((els) => els.type == "update");
   console.log(del_benes);
   console.log(update_benes);
-
 
   const del_ret = await Promise.all(
     del_benes.map(async (el) => {
@@ -143,12 +143,12 @@ router.post("/update-beneficiary", async (req, res) => {
   );
   const update_ret = await Promise.all(
     update_benes.map(async (el) => {
-      const { beneficiary_account, new_name } = el;
+      const { beneficiary_account, beneficiary_name } = el;
       try {
         const ret = await beneficiaryModel.update(
           username,
           beneficiary_account,
-          new_name
+          beneficiary_name
         );
         console.log(`🎉 Succeed update ${beneficiary_account}`);
       } catch (error) {
@@ -364,7 +364,8 @@ router.get("/beneficiaries", async (req, res) => {
 });
 
 router.get("/transactions/transfer", async (req, res) => {
-  const account_number = req.body.account_number;
+  
+  const account_number = req.query.account_number;
   try {
     const result = await transactionModel.getTransferByAccNumber(
       account_number
@@ -407,19 +408,36 @@ router.get("/debts", async (req, res) => {
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
   const username = decode.username;
-  console.log("hehe");
   var debts = [];
   try {
-    const accounts = await customerModel.getAccounts();
+    const accounts = await customerModel.getAccounts(username);
     console.log("account", accounts);
-    accounts.map(async (acc) => {
-      debts = [...debts, acc.account_number];
-      const creditors = await debtModel.allByCrediter(acc.account_number);
-      const payers = await debtModel.allByPayer(acc.account_number);
-    });
-    console.log(debts);
+    var accInfo = { creditors: [], payers: [] };
+
+    await Promise.all(
+      accounts.map(async (acc) => {
+        const creditors = await debtModel.allByCrediter(acc.account_number);
+        const payers = await debtModel.allByPayer(acc.account_number);
+
+        // var accInfo = { creditors: [], payers: [] };
+
+        creditors.map((creditor) => {
+          accInfo.creditors.push(creditor);
+        });
+        payers.map((payer) => {
+          accInfo.payers.push(payer);
+        });
+
+        // if (creditors.length > 0 || payers.length > 0) {
+        //   debts.push(accInfo);
+        // }
+      })
+    );
+    // res.status(200).json(debts);
+    res.status(200).json(accInfo);
+    
   } catch (error) {
-    throw new createError(401, error.message);
+    throw new createError(400, error.message);
   }
 });
 
@@ -431,6 +449,32 @@ router.post("/debts", async (req, res) => {
   const debt = { ...req.body };
   try {
     const result = await debtModel.add(debt);
+    res.status(200).json(result);
+  } catch (error) {
+    throw error;
+  }
+});
+
+router.delete("/debts", async (req, res) => {
+  const id = req.body.id;
+
+  try {
+    const result = await debtModel.del(id);
+    console.log(result);
+    res.status(204).json();
+  } catch (err) {
+    throw err;
+  }
+});
+
+router.post("/update-debts", async (req, res) => {
+  const { id } = req.body;
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+  const { username } = decode;
+
+  try {
+    const result = await debtModel.update(id);
     res.status(200).json(result);
   } catch (error) {
     throw error;

@@ -27,7 +27,7 @@ router.post("/", async (req, res) => {
     res.status(401).json(error);
   }
 
-  res.status(200).json(account_info);
+  res.status(200).json(...account_info);
   // mpbank: response la { result: "Nguyen Thi Hong Mo"}
   // s2qbank: response la { username: "demo2"}
   // nklbank: response la { fullname, email, account_number, type }
