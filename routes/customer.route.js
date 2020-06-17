@@ -70,39 +70,44 @@ router.post("/add-beneficiary", async (req, res) => {
 
   console.log("beneficiaries", isExist);
   if (isExist.length > 0) {
-    res.status(401).json({ msg: "Account existed in list beneficiaries" });
+    return res.status(401).json({ msg: "Account existed in list beneficiaries" });
   }
 
-  var beneficiary, ref_name;
+  var beneficiary, ref_name = "";
   try {
     switch (bank) {
       case "mpbank":
-        beneficiary = await mpbank.getAccountInfo(beneficiary_account);
-        ref_name = beneficiary.result;
+        if ((beneficiary = await mpbank.getAccountInfo(beneficiary_account))) {
+          ref_name = beneficiary.result;
+        }
         break;
       case "s2qbank":
-        beneficiary = await s2qbank.getAccountInfo(beneficiary_account);
-        ref_name = beneficiary.full_name;
+        if ((beneficiary = await s2qbank.getAccountInfo(beneficiary_account))) {
+          ref_name = beneficiary.full_name;
+        }
         break;
       default:
-        beneficiary = await customerModel.getByAccountNumber(
-          beneficiary_account
-        );
-        ref_name = beneficiary.fullname;
+        if (
+          (beneficiary = await customerModel.getByAccountNumber(
+            beneficiary_account
+          ))
+        ) {
+          ref_name = beneficiary.fullname;
+        }
         break;
     }
     console.log(beneficiary);
-    if (beneficiary == undefined || beneficiary.name == "Error")
+    if (beneficiary === undefined || beneficiary.name == "Error")
       // s2qbank throw {Error:"..."}
-      res.status(403).json({ msg: "1. Not found such account" });
+      return res.status(403).json({ msg: "1. Not found such account" });
   } catch (error) {
     // only mpbank + nklbank throw error
     console.log(`error: ${error}`);
-    res.status(403).json({ msg: "Not found such account" });
+    return res.status(403).json({ msg: "Not found such account" });
   }
 
   var _name = name || ref_name;
-  console.log(`ref_name: ${ref_name}`);
+  console.log(`ref_name: ${_name}`);
   try {
     const ret = await beneficiaryModel.add({
       customer_username: username,
@@ -434,7 +439,6 @@ router.get("/debts", async (req, res) => {
     );
     // res.status(200).json(debts);
     res.status(200).json(accInfo);
-    
   } catch (error) {
     throw new createError(400, error.message);
   }
