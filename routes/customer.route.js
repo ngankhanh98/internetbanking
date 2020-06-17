@@ -9,6 +9,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mpbank = require("../middlewares/mpbank.mdw");
 const s2qbank = require("../middlewares/s2qbank.mdw");
+const partnerbank = require("../middlewares/partnerbank.mdw");
 const moment = require("moment");
 const router = express.Router();
 
@@ -64,52 +65,42 @@ router.post("/add-beneficiary", async (req, res) => {
 
   // check if beneficiary_account in user's bene list
   const benes = await beneficiaryModel.getAllByUsername(username);
-  const isExist = benes.filter(
-    (bene) => bene.beneficiary_account === beneficiary_account
-  );
+  const isExist = benes.filter((bene) => {
+    bene.beneficiary_account === beneficiary_account &&
+      bene.partner_bank === bank;
+  });
 
-  console.log("beneficiaries", isExist);
   if (isExist.length > 0) {
     return res
       .status(401)
       .json({ msg: "Account existed in list beneficiaries" });
   }
 
-  var beneficiary, ref_name;
-  try {
-    switch (bank) {
-      case "mpbank":
-        if ((beneficiary = await mpbank.getAccountInfo(beneficiary_account))) {
-          ref_name = beneficiary.result;
-        }
-        break;
-      case "s2qbank":
-        if ((beneficiary = await s2qbank.getAccountInfo(beneficiary_account))) {
-          ref_name = beneficiary.full_name;
-        }
-        break;
-      default:
-        if (
-          (beneficiary = await customerModel.getByAccountNumber(
-            beneficiary_account
-          ))
-        ) {
-          ref_name = beneficiary.fullname;
-        }
-        break;
+  var account_info;
+  if (bank) {
+    try {
+      account_info = await partnerbank.getAccountInfo(
+        bank,
+        beneficiary_account
+      );
+    } catch (error) {
+      return res.status(403).json({ msg: error.message });
     }
-    if (beneficiary == undefined || beneficiary.name == "Error") {
-      // s2qbank throw {Error:"..."}
-      console.log(beneficiary);
-      return res.status(403).json({ msg: "1. Not found such account" });
+  } else {
+    try {
+      account_info = await customerModel.getByAccountNumber(
+        beneficiary_account
+      );
+      if (!account_info)
+        return res.status(403).json({ msg: "From nklbank: Account not found" });
+    } catch (error) {
+      return res.status(403).json(error);
     }
-  } catch (error) {
-    // only mpbank + nklbank throw error
-    return res.status(403).json({ msg: error.message});
   }
 
-  var _name = name || ref_name;
-  console.log(`ref_name: ${ref_name}`);
+  const { fullname } = account_info;
+
+  const _name = name || fullname;
   try {
     const ret = await beneficiaryModel.add({
       customer_username: username,
@@ -117,7 +108,7 @@ router.post("/add-beneficiary", async (req, res) => {
       beneficiary_name: _name,
       partner_bank: bank,
     });
-    res.status(200).json({ beneficiary_account, _name, bank });
+    res.status(200).json({ beneficiary_account, name: _name, bank });
   } catch (error) {
     res.status(401).json(error);
   }
@@ -262,10 +253,9 @@ router.post("/interbank-transfer-money", async (req, res) => {
     }
     if (interbank_query.name == "Error")
       // s2qbank throw {Error:"..."}
-      res.status(403).json({ msg: "Not found such account" });
+      return res.status(403).json({ msg: "Not found such account" });
   } catch (error) {
-    console.log(`error: ${error}`);
-    res.status(403).json({ msg: "Not found such account" });
+    return res.status(403).json({ msg: error.message });
   }
 
   // store transaction

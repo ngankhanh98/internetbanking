@@ -17,8 +17,7 @@ module.exports = {
       headersig: bcrypt.hashSync(account + _secret + timeStamp, 10),
       headerts: timeStamp,
     };
-
-    const result = await axios({
+    return (result = await axios({
       method: "GET",
       url: "https://mpbinternetbanking.herokuapp.com/user/accountNumber",
       data: {
@@ -28,9 +27,11 @@ module.exports = {
     })
       .then((response) => response.data)
       .catch((err) => {
-        throw new createError(403, "Account not found in mpbank");
-      });
-    return result;
+        throw new createError(
+          err.response.status,
+          `From mpbank: Account not found`
+        );
+      }));
   },
   transferMoney: async (
     receiver,
@@ -80,7 +81,7 @@ module.exports = {
     })
       .then((response) => response.data)
       .catch((err) => {
-        throw new createError(403, "Account not found in mpbank");
+        throw new createError(403, `From mpbank: Account not found`);
       });
   },
 };

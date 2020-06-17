@@ -45,11 +45,10 @@ module.exports = {
             .digest("hex"),
         },
       });
-      console.log(response.data);
       return response.data;
     } catch (error) {
       console.log(error);
-      throw new createError(403, "Account not found in s2qbank");
+      throw new createError(error.response.status, `From s2qbank: Account not found`);
     }
   },
   transferMoney: async (depositor, account_number, amount, note) => {
@@ -104,7 +103,7 @@ module.exports = {
         )
         .then((response) => response.data)
         .catch((err) => {
-          throw new createError(403, "Account not found in s2qbank");
+          throw new createError(err.response.status, `From s2qbank: Account not found`);
         });
     } catch (error) {
       console.log(error);
