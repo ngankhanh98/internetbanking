@@ -9,10 +9,12 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const mpbank = require("../middlewares/mpbank.mdw");
 const s2qbank = require("../middlewares/s2qbank.mdw");
+const partnerbank = require("../middlewares/partnerbank.mdw");
 const moment = require("moment");
 const router = express.Router();
 
 const { bank } = require("../config/default.json");
+const { min_transfermoney } = bank;
 
 router.get("/", async (req, res) => {
   // req.headers {x-access-token}
@@ -64,12 +66,13 @@ router.post("/add-beneficiary", async (req, res) => {
 
   // check if beneficiary_account in user's bene list
   const benes = await beneficiaryModel.getAllByUsername(username);
-  const isExist = benes.filter(
-    (bene) => bene.beneficiary_account === beneficiary_account
-  );
+  const isExist = benes.filter((bene) => {
+    bene.beneficiary_account === beneficiary_account &&
+      bene.partner_bank === bank;
+  });
 
-  console.log("beneficiaries", isExist);
   if (isExist.length > 0) {
+<<<<<<< HEAD
     return res.status(401).json({ msg: "Account existed in list beneficiaries" });
   }
 
@@ -108,6 +111,38 @@ router.post("/add-beneficiary", async (req, res) => {
 
   var _name = name || ref_name;
   console.log(`ref_name: ${_name}`);
+=======
+    return res
+      .status(401)
+      .json({ msg: "Account existed in list beneficiaries" });
+  }
+
+  var account_info;
+  if (bank) {
+    try {
+      account_info = await partnerbank.getAccountInfo(
+        bank,
+        beneficiary_account
+      );
+    } catch (error) {
+      return res.status(403).json({ msg: error.message });
+    }
+  } else {
+    try {
+      account_info = await customerModel.getByAccountNumber(
+        beneficiary_account
+      );
+      if (!account_info)
+        return res.status(403).json({ msg: "From nklbank: Account not found" });
+    } catch (error) {
+      return res.status(403).json(error);
+    }
+  }
+
+  const { fullname } = account_info;
+
+  const _name = name || fullname;
+>>>>>>> 8962443c97c272a8ede0c7496cb2504752e6b002
   try {
     const ret = await beneficiaryModel.add({
       customer_username: username,
@@ -115,7 +150,7 @@ router.post("/add-beneficiary", async (req, res) => {
       beneficiary_name: _name,
       partner_bank: bank,
     });
-    res.status(200).json({ beneficiary_account, _name, bank });
+    res.status(200).json({ beneficiary_account, name: _name, bank });
   } catch (error) {
     res.status(401).json(error);
   }
@@ -142,7 +177,7 @@ router.post("/update-beneficiary", async (req, res) => {
         console.log(`🎉 Succeed delete ${beneficiary_account}`);
       } catch (error) {
         console.log(error);
-        res.status(401).json(error);
+        return res.status(401).json(error);
       }
     })
   );
@@ -158,7 +193,7 @@ router.post("/update-beneficiary", async (req, res) => {
         console.log(`🎉 Succeed update ${beneficiary_account}`);
       } catch (error) {
         console.log(error);
-        res.status(401).json(error);
+        return res.status(401).json(error);
       }
     })
   );
@@ -178,10 +213,10 @@ router.post("/intrabank-transfer-money", async (req, res) => {
   const receivers = await accountModel.getByAccNumber(receiver);
 
   if (account_balance < amount) {
-    res.status(403).json({ msg: "Account balance not enough" });
+    return res.status(403).json({ msg: "Account balance not enough" });
   }
   if (receivers.length === 0) {
-    res.status(403).json({ msg: "Receiver account not found" });
+    return res.status(403).json({ msg: "Receiver account not found" });
   }
 
   // store transaction
@@ -191,8 +226,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     transaction_id = ret.insertId;
     console.log(ret);
   } catch (error) {
-    console.log(error);
-    return error;
+    return res.status(403).json({ msg: error });
   }
 
   // proceed draw money
@@ -210,7 +244,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await accountModel.drawMoney(_depositor);
   } catch (error) {
     await transactionModel.del(transaction_id);
-    return error;
+    return res.status(403).json({ msg: error });
   }
 
   try {
@@ -219,7 +253,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await transactionModel.del(transaction_id); // delete transaction record
     const revert_depositor = { ..._depositor, transaction_type: "+" }; // revert depositor balance
     await accountModel.drawMoney(revert_depositor);
-    return error;
+    return res.status(403).json({ msg: error });
   }
   res.status(200).json({
     msg: `Transfer money succeed. Transaction stored at transaction_id = ${transaction_id}`,
@@ -240,32 +274,25 @@ router.post("/interbank-transfer-money", async (req, res) => {
   const receiver_get = charge_include ? amount : amount - fee;
   const transaction = { ...req.body, amount: depositor_pay };
 
+  // check if amount > min_transfermoney
+  if (amount < min_transfermoney)
+    return res
+      .status(403)
+      .json({ msg: `Transfer money less than minimun ${min_transfermoney}` });
   // check if depositor's balance > money to transfer
   const depositors = await accountModel.getByAccNumber(depositor);
   const { account_balance } = depositors[0];
   if (account_balance < amount) {
-    res.status(403).json({ msg: "Account balance not enough" });
+    return res.status(403).json({ msg: "Account balance not enough" });
   }
 
   // check if receiver valid (in case of add new, not from the list)
-  var interbank_query;
+  var account_info;
   try {
-    switch (partner_bank) {
-      case "mpbank":
-        interbank_query = await mpbank.getAccountInfo(receiver);
-        break;
-      case "s2qbank":
-        interbank_query = await s2qbank.getAccountInfo(receiver);
-        break;
-    }
-    if (interbank_query.name == "Error")
-      // s2qbank throw {Error:"..."}
-      res.status(403).json({ msg: "Not found such account" });
+    account_info = await partnerbank.getAccountInfo(partner_bank, receiver);
   } catch (error) {
-    console.log(`error: ${error}`);
-    res.status(403).json({ msg: "Not found such account" });
+    return res.status(403).json({ msg: error.message });
   }
-
   // store transaction
   var transaction_id;
   try {
@@ -273,8 +300,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     transaction_id = ret.insertId;
     console.log(ret);
   } catch (error) {
-    console.log(error);
-    return error;
+    return res.status(403).json({ msg: "Store transaction fail" });
   }
 
   // procceed draw money
@@ -288,37 +314,52 @@ router.post("/interbank-transfer-money", async (req, res) => {
     await accountModel.drawMoney(_depositor);
   } catch (error) {
     await transactionModel.del(transaction_id);
-    return error;
+    return res.status(403).json({ msg: "Draw money fail" });
   }
 
+  // try {
+  //   switch (partner_bank) {
+  //     case "mpbank":
+  //       await mpbank.transferMoney(
+  //         receiver,
+  //         receiver_get,
+  //         depositor,
+  //         note,
+  //         fee,
+  //         charge_include
+  //       );
+  //       break;
+  //     default:
+  //       const ret = await s2qbank.transferMoney(
+  //         depositor,
+  //         receiver,
+  //         receiver_get,
+  //         note
+  //       );
+  //       console.log(ret);
+  //       break;
+  //   }
+  // } catch (error) {
+  //   await transactionModel.del(transaction_id);
+  //   const revert_depositor = { ..._depositor, transaction_type: "+" };
+  //   await accountModel.drawMoney(revert_depositor);
+  //   return res.status(403).json({ msg: "Transfer money fail" });
+  // }
+
+  const entity = {
+    receiver,
+    depositor,
+    receiver_get,
+    note,
+    fee,
+    charge_include,
+  };
   try {
-    switch (partner_bank) {
-      case "mpbank":
-        await mpbank.transferMoney(
-          receiver,
-          receiver_get,
-          depositor,
-          note,
-          fee,
-          charge_include
-        );
-        break;
-      default:
-        const ret = await s2qbank.transferMoney(
-          depositor,
-          receiver,
-          receiver_get,
-          note
-        );
-        console.log(ret);
-        break;
-    }
+    await partnerbank.transferMoney(partner_bank, entity);
   } catch (error) {
-    await transactionModel.del(transaction_id);
     const revert_depositor = { ..._depositor, transaction_type: "+" };
     await accountModel.drawMoney(revert_depositor);
-    console.log(error);
-    return error;
+    return res.status(403).json({ msg: "Transfer money fail" });
   }
 
   const response = {
@@ -343,9 +384,9 @@ router.post("/update", async (req, res) => {
   const username = decode.username;
   try {
     const result = await customerModel.update(req.body, username);
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
-    throw new createError(401, error.message);
+    return res.status(403).json({ msg: error });
   }
 });
 
@@ -368,8 +409,33 @@ router.get("/beneficiaries", async (req, res) => {
   res.status(200).json(result);
 });
 
+router.get("/beneficiaries-v2", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+
+  const username = decode.username;
+  var rows;
+  try {
+    rows = await beneficiaryModel.getAllByUsername(username);
+  } catch (error) {
+    throw new createError(401, error.message);
+  }
+  let key = 1;
+
+  // const nklbank = rows
+  //   .filter((row) => row.partner_bank == null);
+  //   const ret = nklbank.map((el) => new_el =)
+  console.log(nklbank);
+  res.status(200).json(nklbank);
+
+  // const result = rows.map(
+  //   (elem, key) => (new_elem = { ...elem, key: key + 1 })
+  // );
+  // res.status(200).json(result);
+});
+
 router.get("/transactions/transfer", async (req, res) => {
-  const account_number = req.body.account_number;
+  const account_number = req.query.account_number;
   try {
     const result = await transactionModel.getTransferByAccNumber(
       account_number
@@ -380,7 +446,7 @@ router.get("/transactions/transfer", async (req, res) => {
   }
 });
 router.get("/transactions/receiver", async (req, res) => {
-  const account_number = req.body.account_number;
+  const account_number = req.query.account_number;
   try {
     const result = await transactionModel.getReceiverByAccNumber(
       account_number
@@ -388,6 +454,21 @@ router.get("/transactions/receiver", async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     throw new createError(401, error.message);
+  }
+});
+router.get("/transactions/normal", async (req, res) => {
+  const account_number = req.query.account_number;
+  try {
+    const transfers = await transactionModel.getTransferByAccNumber(
+      account_number
+    );
+    const receivers = await transactionModel.getReceiverByAccNumber(
+      account_number
+    );
+    const result = { transfers, receivers };
+    res.status(200).json(result);
+  } catch (err) {
+    throw err;
   }
 });
 
@@ -454,7 +535,7 @@ router.post("/debts", async (req, res) => {
     const result = await debtModel.add(debt);
     res.status(200).json(result);
   } catch (error) {
-    throw error;
+    throw new createError(400, error.message);
   }
 });
 
@@ -466,7 +547,7 @@ router.delete("/debts", async (req, res) => {
     console.log(result);
     res.status(204).json();
   } catch (err) {
-    throw err;
+    throw new createError(400, error.message);
   }
 });
 
@@ -480,7 +561,7 @@ router.post("/update-debts", async (req, res) => {
     const result = await debtModel.update(id);
     res.status(200).json(result);
   } catch (error) {
-    throw error;
+    throw new createError(400, error.message);
   }
 });
 module.exports = router;

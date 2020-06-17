@@ -17,7 +17,7 @@ const model = {
         `select * from customer where username = "${entity.username}"`
       );
     } catch (error) {
-      return error;
+      throw error;
     }
 
     return db.add(entity, `customer`);
@@ -30,7 +30,7 @@ const model = {
     try {
       rows = await db.update(entity, { username: username }, `customer`);
     } catch (error) {
-      return error;
+      throw error;
     }
     return rows;
   },
@@ -70,7 +70,7 @@ const model = {
         `select * from account where customer_username = '${username}'`
       );
     } catch (error) {
-      return error;
+      throw error;
     }
   },
   getAccountsByType: async (username, type) => {
@@ -79,7 +79,7 @@ const model = {
         `select * from account where customer_username = '${username}' and type = ${type}`
       );
     } catch (error) {
-      return error;
+      throw error;
     }
   },
   getByAccountNumber: async (account_number) => {
@@ -87,9 +87,9 @@ const model = {
       const rows = await db.load(
         `select * from customer, account where customer.username = account.customer_username and account.account_number = '${account_number}'`
       );
-      return rows[0];
+      return rows.length ? rows[0] : null;
     } catch (error) {
-      return error;
+      throw error;
     }
   },
   updatePassword: async (oldPassword, newPassword, username) => {
@@ -105,7 +105,7 @@ const model = {
         `update customer set password ="${newPassword}" where username ="${username}" `
       );
     } catch (error) {
-      return error;
+      throw error;
     }
     return rows;
   },

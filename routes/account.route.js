@@ -2,35 +2,46 @@ const express = require("express");
 const accountModel = require("../models/account.model");
 const mpbank = require("../middlewares/mpbank.mdw");
 const s2qbank = require("../middlewares/s2qbank.mdw");
-
+const partnerbank = require("../middlewares/partnerbank.mdw");
+const customerModel = require('../models/customer.model');
 const router = express.Router();
 
 router.post("/", async (req, res) => {
-  const { account_number, bank } = req.body;
-
+  const { account_number } = req.body;
+  const account = req.body;
   var account_info;
-  try {
-    switch (bank) {
-      case "mpbank":
-        account_info = await mpbank.getAccountInfo(account_number);
-        break;
-      case "s2qbank":
-        account_info = await s2qbank.getAccountInfo(account_number);
-        break;
-      default:
-        account_info = await accountModel.getCustomerInfoByAccNumber(account_number);
-        break;
+  if (account.hasOwnProperty("bank")) {
+    const { bank } = account;
+    console.log(bank);
+    try {
+      account_info = await partnerbank.getAccountInfo(bank, account_number);
+    } catch (error) {
+      return res.status(403).json({ msg: error.message });
     }
-    if (account_info == undefined || account_info.name == "Error")
-      res.status(403).json({ msg: "Not found such account" });
-  } catch (error) {
-    res.status(401).json(error);
+  } else {
+    try {
+      account_info = await customerModel.getByAccountNumber(account_number);
+      console.log(account_info);
+      if (!account_info)
+        return res.status(403).json({ msg: "From nklbank: Account not found" });
+    } catch (error) {
+      console.log(error);
+      return res.status(403).json(error);
+    }
   }
 
-  res.status(200).json(...account_info);
+  const { fullname } = account_info;
+  const result = {
+    beneficiary_account: account_number,
+    beneficiary_name: fullname,
+  };
+
+  res.status(200).json(result);
   // mpbank: response la { result: "Nguyen Thi Hong Mo"}
   // s2qbank: response la { username: "demo2"}
   // nklbank: response la { fullname, email, account_number, type }
 });
+
+router.get("/:account");
 
 module.exports = router;
