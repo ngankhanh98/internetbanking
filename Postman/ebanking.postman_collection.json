@@ -120,13 +120,13 @@
 						"header": [
 							{
 								"key": "x-access-token",
-								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MTk1MjgxNSwiZXhwIjoxNTkxOTUzNDE1fQ.T62pmSGX94XiTo0mossEHFxww9iyS9wCAFhX1AdWzRA",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MjM4NTM0MywiZXhwIjoxNTk0OTc3MzQzfQ.HtOiH6GjbdW9IJ0Q8pbYECHGUzKwwRq4xoXsQgRufj0",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"beneficiary_account\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MTk1NjQ2NiwiZXhwIjoxNTkxOTU3MDY2fQ.Nk6a_IqCxaTLGdR49S--t0VQHZjjRBUs0uDkA84Hf6k\",\n\t\"bank\": \"s2qbank\"\n}",
+							"raw": "{\n\t\"beneficiary_account\": \"1234\",\n\t\"bank\": \"s2qbank\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -156,13 +156,13 @@
 						"header": [
 							{
 								"key": "x-access-token",
-								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MjEwMjQzMiwiZXhwIjoxNTkyMTAzMDMyfQ.dv5crjle1HRMl3yBGqECbCuJy0QL7mFd_VvMcLvikiU",
+								"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im5nYW5raGFuaCIsImlhdCI6MTU5MjM3MTYxMSwiZXhwIjoxNTk0OTYzNjExfQ.AHp497v_hyZv4O06FsVShCUBjn1a-iXmYt1vVQks2o0",
 								"type": "text"
 							}
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"depositor\": \"28349\",\r\n    \"receiver\": \"1591679525136\",\r\n    \"amount\": 20000,\r\n    \"note\": \"pay debt\",\r\n    \"charge_include\": false,\r\n    \"partner_bank\": \"mpbank\"\r\n}",
+							"raw": "{\r\n    \"depositor\": \"12345\",\r\n    \"receiver\": \"1592399787\",\r\n    \"amount\": 200,\r\n    \"note\": \"pay debt\",\r\n    \"charge_include\": false,\r\n    \"partner_bank\": \"s2qbank\"\r\n\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
