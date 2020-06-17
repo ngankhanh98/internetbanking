@@ -13,7 +13,7 @@ const transporter = nodemailer.createTransport({
 });
 
 var mailOptions = {
-  from: 'nkl.banking.14k@gmail.com',
+  from: 'nkl.banking.14@gmail.com',
   to: '',
   subject: 'Verify your OTP',
   text: 'That was easy!'

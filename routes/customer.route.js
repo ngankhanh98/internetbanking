@@ -372,7 +372,7 @@ router.get("/transactions/transfer", async (req, res) => {
   }
 });
 router.get("/transactions/receiver", async (req, res) => {
-  const account_number = req.body.account_number;
+  const account_number = req.query.account_number;
   try {
     const result = await transactionModel.getReceiverByAccNumber(
       account_number
@@ -380,6 +380,17 @@ router.get("/transactions/receiver", async (req, res) => {
     res.status(200).json(result);
   } catch (error) {
     throw new createError(401, error.message);
+  }
+});
+router.get("/transactions/normal", async(req, res)=> {
+  const account_number = req.query.account_number;
+  try {
+    const transfers = await transactionModel.getTransferByAccNumber(account_number);
+    const receivers = await transactionModel.getReceiverByAccNumber(account_number);
+    const result = {transfers, receivers}
+    res.status(200).json(result);
+  }catch (err){
+    throw (err);
   }
 });
 
