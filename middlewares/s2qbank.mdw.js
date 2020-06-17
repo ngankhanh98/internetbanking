@@ -1,6 +1,8 @@
 const moment = require("moment");
 const crypto = require("crypto");
 const axios = require("axios");
+const createError = require("https-error");
+
 const { generateKeyPairSync } = require("crypto");
 
 const private_key = `-----BEGIN RSA PRIVATE KEY-----
@@ -43,11 +45,10 @@ module.exports = {
             .digest("hex"),
         },
       });
-      console.log(response.data);
       return response.data;
     } catch (error) {
       console.log(error);
-      throw error;
+      throw new createError(error.response.status, `From s2qbank: Account not found`);
     }
   },
   transferMoney: async (depositor, account_number, amount, note) => {
@@ -100,17 +101,13 @@ module.exports = {
           { data, signature },
           { headers: headers }
         )
-        .then((result) => {
-          console.log(result.data);
-          return result.data;
-        })
+        .then((response) => response.data)
         .catch((err) => {
-          console.log(err.response);
-          throw err;
+          throw new createError(err.response.status, `From s2qbank: Account not found`);
         });
     } catch (error) {
       console.log(error);
-      throw error;
+      throw new createError(403, "Fail create signature");
     }
   },
 };

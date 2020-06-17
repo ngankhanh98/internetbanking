@@ -9,25 +9,34 @@ router.post("/", async (req, res) => {
   const { account_number, bank } = req.body;
 
   var account_info;
-  try {
-    switch (bank) {
-      case "mpbank":
-        account_info = await mpbank.getAccountInfo(account_number);
-        break;
-      case "s2qbank":
-        account_info = await s2qbank.getAccountInfo(account_number);
-        break;
-      default:
-        account_info = await accountModel.getCustomerInfoByAccNumber(account_number);
-        break;
+  if (bank) {
+    try {
+      account_info = await partnerbank.getAccountInfo(
+        bank,
+        beneficiary_account
+      );
+    } catch (error) {
+      return res.status(403).json({ msg: error.message });
     }
-    if (account_info == undefined || account_info.name == "Error")
-      res.status(403).json({ msg: "Not found such account" });
-  } catch (error) {
-    res.status(401).json(error);
+  } else {
+    try {
+      account_info = await customerModel.getByAccountNumber(
+        beneficiary_account
+      );
+      if (!account_info)
+        return res.status(403).json({ msg: "From nklbank: Account not found" });
+    } catch (error) {
+      return res.status(403).json(error);
+    }
   }
 
-  res.status(200).json(...account_info);
+  const { fullname } = account_info;
+  const result = {
+    beneficiary_account: account_number,
+    beneficiary_name: fullname,
+  };
+
+  res.status(200).json(result);
   // mpbank: response la { result: "Nguyen Thi Hong Mo"}
   // s2qbank: response la { username: "demo2"}
   // nklbank: response la { fullname, email, account_number, type }

@@ -2,6 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const bcrypt = require("bcrypt");
 const openpgp = require("openpgp");
+const createError = require("https-error");
 const config = require("../config/client.mpbank.json");
 
 const { secret, partnercode, passphrase } = config;
@@ -16,8 +17,7 @@ module.exports = {
       headersig: bcrypt.hashSync(account + _secret + timeStamp, 10),
       headerts: timeStamp,
     };
-
-    const result = await axios({
+    return (result = await axios({
       method: "GET",
       url: "https://mpbinternetbanking.herokuapp.com/user/accountNumber",
       data: {
@@ -26,10 +26,21 @@ module.exports = {
       headers: headers,
     })
       .then((response) => response.data)
-      .catch((err) => err);
-    return result;
+      .catch((err) => {
+        throw new createError(
+          err.response.status,
+          `From mpbank: Account not found`
+        );
+      }));
   },
-  transferMoney: async (receiver, money, depositor, note, fee, charge_include) => {
+  transferMoney: async (
+    receiver,
+    money,
+    depositor,
+    note,
+    fee,
+    charge_include
+  ) => {
     await openpgp.initWorker({ path: "openpgp.worker.js" });
     let timeStamp = Date.now();
     let _secret = secret;
@@ -58,7 +69,7 @@ module.exports = {
       content: note,
       typeSend: charge_include,
       fee: fee,
-      nameBank: 'NKLBank',
+      nameBank: "NKLBank",
       accountSender: depositor,
     };
 
@@ -69,6 +80,8 @@ module.exports = {
       headers: headers,
     })
       .then((response) => response.data)
-      .catch((err) => err);
+      .catch((err) => {
+        throw new createError(403, `From mpbank: Account not found`);
+      });
   },
 };
