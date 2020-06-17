@@ -368,6 +368,31 @@ router.get("/beneficiaries", async (req, res) => {
   res.status(200).json(result);
 });
 
+router.get("/beneficiaries-v2", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const decode = jwt.decode(token);
+
+  const username = decode.username;
+  var rows;
+  try {
+    rows = await beneficiaryModel.getAllByUsername(username);
+  } catch (error) {
+    throw new createError(401, error.message);
+  }
+  let key = 1;
+
+  // const nklbank = rows
+  //   .filter((row) => row.partner_bank == null);
+  //   const ret = nklbank.map((el) => new_el =)
+  console.log(nklbank);
+  res.status(200).json(nklbank);
+
+  // const result = rows.map(
+  //   (elem, key) => (new_elem = { ...elem, key: key + 1 })
+  // );
+  // res.status(200).json(result);
+});
+
 router.get("/transactions/transfer", async (req, res) => {
   const account_number = req.query.account_number;
   try {
@@ -390,15 +415,19 @@ router.get("/transactions/receiver", async (req, res) => {
     throw new createError(401, error.message);
   }
 });
-router.get("/transactions/normal", async(req, res)=> {
+router.get("/transactions/normal", async (req, res) => {
   const account_number = req.query.account_number;
   try {
-    const transfers = await transactionModel.getTransferByAccNumber(account_number);
-    const receivers = await transactionModel.getReceiverByAccNumber(account_number);
-    const result = {transfers, receivers}
+    const transfers = await transactionModel.getTransferByAccNumber(
+      account_number
+    );
+    const receivers = await transactionModel.getReceiverByAccNumber(
+      account_number
+    );
+    const result = { transfers, receivers };
     res.status(200).json(result);
-  }catch (err){
-    throw (err);
+  } catch (err) {
+    throw err;
   }
 });
 
