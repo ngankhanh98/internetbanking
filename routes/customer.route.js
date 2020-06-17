@@ -72,46 +72,6 @@ router.post("/add-beneficiary", async (req, res) => {
   });
 
   if (isExist.length > 0) {
-<<<<<<< HEAD
-    return res.status(401).json({ msg: "Account existed in list beneficiaries" });
-  }
-
-  var beneficiary, ref_name = "";
-  try {
-    switch (bank) {
-      case "mpbank":
-        if ((beneficiary = await mpbank.getAccountInfo(beneficiary_account))) {
-          ref_name = beneficiary.result;
-        }
-        break;
-      case "s2qbank":
-        if ((beneficiary = await s2qbank.getAccountInfo(beneficiary_account))) {
-          ref_name = beneficiary.full_name;
-        }
-        break;
-      default:
-        if (
-          (beneficiary = await customerModel.getByAccountNumber(
-            beneficiary_account
-          ))
-        ) {
-          ref_name = beneficiary.fullname;
-        }
-        break;
-    }
-    console.log(beneficiary);
-    if (beneficiary === undefined || beneficiary.name == "Error")
-      // s2qbank throw {Error:"..."}
-      return res.status(403).json({ msg: "1. Not found such account" });
-  } catch (error) {
-    // only mpbank + nklbank throw error
-    console.log(`error: ${error}`);
-    return res.status(403).json({ msg: "Not found such account" });
-  }
-
-  var _name = name || ref_name;
-  console.log(`ref_name: ${_name}`);
-=======
     return res
       .status(401)
       .json({ msg: "Account existed in list beneficiaries" });
@@ -142,7 +102,6 @@ router.post("/add-beneficiary", async (req, res) => {
   const { fullname } = account_info;
 
   const _name = name || fullname;
->>>>>>> 8962443c97c272a8ede0c7496cb2504752e6b002
   try {
     const ret = await beneficiaryModel.add({
       customer_username: username,
