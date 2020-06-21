@@ -5,9 +5,9 @@ const jwt = require("jsonwebtoken");
 const ranToken = require("rand-token");
 const { auth } = require("../config/default.json");
 const verify = require("../middlewares/verify.mdw");
-const { route } = require("./customer.route");
-
+const personnelModel = require("../models/personnel.model");
 const router = express.Router();
+const bcrypt = require("bcryptjs");
 
 // customer login
 router.post("/", async (req, res) => {
@@ -28,7 +28,7 @@ router.post("/", async (req, res) => {
     throw new createError(401, error.message);
   }
 
-  // if login suceeded
+  // if login succeed
   const token = generateToken(result.username);
 
   const { RFSZ } = auth;
@@ -41,6 +41,41 @@ router.post("/", async (req, res) => {
   });
 });
 
+// personnel login
+router.post("/personnel", async (req, res) => {
+  // req.body{username, password}
+  try {
+    const entity = req.body;
+    // check  username existed
+    console.log(entity);
+    const user = await personnelModel.getSingleByUsername(entity.username);
+    console.log(user);
+    if (!user) throw new createError(404, "Username not found");
+
+    const succeeded = bcrypt.compareSync(entity.password, user.password);
+    if (!succeeded) throw new createError(403, "Password is wrong");
+  } catch (error) {
+    throw error;
+  }
+  // if login succeeded
+  const token = generateToken(req.body.username);
+  const { RFSZ } = auth;
+  const refreshToken = ranToken.generate(RFSZ);
+
+  res.status(200).json({
+    accessToken: token,
+    refreshToken,
+  });
+
+  // const { RFSZ } = auth;
+  // const refreshToken = ranToken.generate(RFSZ);
+  // await customerModel.updateToken(result.username, refreshToken);
+
+  // res.status(200).json({
+  //   accessToken: token,
+  //   refreshToken,
+  // });
+});
 router.post("/refresh", async (req, res) => {
   // req.body {accessToken: refreshToken}
 
