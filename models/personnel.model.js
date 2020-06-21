@@ -12,7 +12,15 @@ const model = {
       throw new createError(400, error);
     }
   },
-  del: async (id) => await db.del({ id: id }, "personnel"),
+  delById: async (id) => {
+    try {
+      await db.del({ id: id }, "personnel");
+      return true;
+    } catch (err) {
+      console.log(err);
+      throw createError(500, "Failed to delete person");
+    }
+  },
   login: async (username, password) => {
     try {
       const users = await db.load(
@@ -40,7 +48,7 @@ const model = {
       throw new createError(500, error);
     }
   },
-  update: async (person, id) => {
+  updateById: async (person, id) => {
     try {
       if (person.password) {
         person.password = bcrypt.hashSync(person.password, 8);

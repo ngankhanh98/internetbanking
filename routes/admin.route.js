@@ -46,12 +46,26 @@ router.put("/personnel/:id", async (req, res) => {
       .replace(/[\u0300-\u036f]/g, "")
       .toUpperCase();
 
-    const succeeded = await personnelModel.update(newPerson, req.params.id);
+    const succeeded = await personnelModel.updateById(newPerson, req.params.id);
     if (succeeded) {
       res.sendStatus(200);
     }
   } catch (err) {
     console.log(err);
+    throw err;
+  }
+});
+
+router.delete("/personnel/:id", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const { username } = jwt.decode(token);
+  try {
+    await personnelModel.checkPermission("admin", username);
+    const succeeded = await personnelModel.delById(req.params.id);
+    if (succeeded) {
+      res.sendStatus(200);
+    }
+  } catch (err) {
     throw err;
   }
 });
