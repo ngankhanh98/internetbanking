@@ -40,6 +40,20 @@ const model = {
       throw new createError(500, error);
     }
   },
+  update: async (person, id) => {
+    try {
+      if (person.password) {
+        person.password = bcrypt.hashSync(person.password, 8);
+      }
+      console.log("person", person);
+      await db.update(person, { id: id }, "personnel");
+      //  await db.load(`update personnel set ${person} where id = "${id}" `);
+    } catch (err) {
+      console.log(err);
+      throw new createError(500, "Failed to update person");
+    }
+    return true;
+  },
   checkPermission: async (permission, username) => {
     const existPerson = await model.getSingleByUsername(username);
     console.log(existPerson);

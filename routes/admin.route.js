@@ -35,4 +35,25 @@ router.post("/personnel", async (req, res) => {
   res.sendStatus(200);
 });
 
+router.put("/personnel/:id", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const { username } = jwt.decode(token);
+  try {
+    await personnelModel.checkPermission("admin", username);
+    let newPerson = req.body;
+    newPerson.fullname = newPerson.fullname
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toUpperCase();
+
+    const succeeded = await personnelModel.update(newPerson, req.params.id);
+    if (succeeded) {
+      res.sendStatus(200);
+    }
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+});
+
 module.exports = router;
