@@ -64,7 +64,6 @@ const model = {
   },
   checkPermission: async (permission, username) => {
     const existPerson = await model.getSingleByUsername(username);
-    console.log(existPerson);
     if (!existPerson) {
       throw new createError(403, `You are not ${permission}`);
     }

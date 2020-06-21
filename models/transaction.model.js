@@ -1,5 +1,5 @@
 const db = require("../utils/db");
-
+const createError = require("https-error");
 const model = {
   add: async (transaction) => await db.add(transaction, "transaction"),
   del: async (id) => await db.del({ id: id }, "transaction"),
@@ -34,6 +34,21 @@ const model = {
       return transactions;
     } catch (error) {
       throw new createError(500, "Failed to load transactions");
+    }
+  },
+  getFilteredByTime: async (from, to) => {
+    try {
+      console.log(
+        `select * from transaction where timestamp > ${from} and timestamp < ${to}`
+      );
+
+      const transactions = await db.load(
+        `select * from transaction where timestamp > "${from}" and timestamp < "${to}"`
+      );
+      return transactions;
+    } catch (error) {
+      console.log(error);
+      throw new createError(500, "Failed to get filtered transactions");
     }
   },
 };

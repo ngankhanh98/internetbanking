@@ -4,7 +4,7 @@ const personnelModel = require("../models/personnel.model");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
 const transactionModel = require("../models/transaction.model");
-const { HmacRIPEMD160 } = require("crypto-js");
+const moment = require("moment");
 router.get("/personnel", async (req, res) => {
   const token = req.headers["x-access-token"];
   const { username } = jwt.decode(token);
@@ -82,6 +82,23 @@ router.get("/transactions", async (req, res) => {
       throw new createError(400, "Cant find partner bank");
     }
     const transactions = await transactionModel.getAllByBankCode(bankCode);
+    res.status(200).json(transactions);
+  } catch (err) {
+    throw err;
+  }
+});
+
+router.get("/transactions/filter", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const { username } = jwt.decode(token);
+  const { from, to } = req.query;
+  const dateFrom = new Date(from);
+  const dateTo = new Date(to);
+
+  console.log(req.query);
+  try {
+    await personnelModel.checkPermission("admin", username);
+    const transactions = await transactionModel.getFilteredByTime(from, to);
     res.status(200).json(transactions);
   } catch (err) {
     throw err;
