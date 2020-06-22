@@ -6,7 +6,7 @@ const model = {
   getTransferByAccNumber: async (acccount_number) => {
     try {
       return await db.load(
-        `select * from transaction where depositor = "${acccount_number}" order by timestamp desc`
+        `select * from transaction where depositor = "${acccount_number}" and depositor!=receiver order by timestamp desc`
       );
     } catch (error) {
       throw error;
@@ -23,7 +23,7 @@ const model = {
   },
   getByAccNumber: async (acccount_number) => {
     try {
-    } catch (error) {}
+    } catch (error) { }
   },
   getAllByBankCode: async (bank) => {
     try {
@@ -51,6 +51,16 @@ const model = {
       throw new createError(500, "Failed to get filtered transactions");
     }
   },
+  getPayDebt: async (depositor) => {
+    try {
+      // return await db.load(`select * from transaction where depositor = "${depositor}" and pay_debt!=-1`)
+      return await db.load(`select * from transaction where depositor = "28349" and pay_debt!=-1`)
+
+    } catch (error) {
+      console.log('error', error)
+      throw new createError("401", error.message);
+    }
+  }
 };
 
 module.exports = model;
