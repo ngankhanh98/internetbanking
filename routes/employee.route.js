@@ -77,7 +77,10 @@ router.post("/intrabank-deposit", async (req, res) => {
   const { receiver, amount } = req.body
   const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
-
+  const isValidAccount = await accountModel.getByAccNumber(receiver)
+  if (isValidAccount.length === 0)
+    return res.status(401).json({ msg: "Account not existed" })
+    
   // ghi nhan giao dich
   var transactionId;
   try {
