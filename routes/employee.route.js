@@ -100,7 +100,7 @@ router.post("/intrabank-deposit", async (req, res) => {
     await transactionModel.del(transactionId);
     throw new createError(401, 'Draw money failed')
   }
-})
+});
 
 // Lịch sử nhận tiền: tự nộp tiền + người khác chuyển tiền cho
 router.get("/history-deposit/:account", async (req, res) => {
@@ -112,22 +112,23 @@ router.get("/history-deposit/:account", async (req, res) => {
     console.log('error', error)
     throw new createError('401', error.message);
   }
-})
+});
 
-// Lịch sử chuyển tiền: chuyển cho người khác
+// Lịch sử chuyển tiền: chuyển cho người khác (không bao gồm để thanh toán nợ)
 router.get("/history-transfer/:account", async (req, res) => {
   const account = req.params['account']
   try {
     const result = await transactionModel.getTransferByAccNumber(account);
-    res.status(200).json(result)
+    const ret = [...result].filter(row => row.pay_debt == -1);
+    res.status(200).json(ret)
   } catch (error) {
     console.log('error', error)
     throw new createError('401', error.message);
   }
-})
+});
 
 // Lịch sử thanh toán nợ
-router.get("/history-paydebt/:account", async(req, res)=>{
+router.get("/history-paydebt/:account", async (req, res) => {
   const account = req.params['account']
   try {
     const result = await transactionModel.getPayDebt(account);
@@ -136,7 +137,7 @@ router.get("/history-paydebt/:account", async(req, res)=>{
     console.log('error', error)
     throw new createError('401', error.message);
   }
-})
+});
 
 const randomAccountNum = () => {
   var result = "";

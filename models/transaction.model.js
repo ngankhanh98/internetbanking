@@ -53,8 +53,7 @@ const model = {
   },
   getPayDebt: async (depositor) => {
     try {
-      // return await db.load(`select * from transaction where depositor = "${depositor}" and pay_debt!=-1`)
-      return await db.load(`select * from transaction where depositor = "28349" and pay_debt!=-1`)
+      return await db.load(`select * from transaction where depositor = "${depositor}" and pay_debt!=-1`)
 
     } catch (error) {
       console.log('error', error)
