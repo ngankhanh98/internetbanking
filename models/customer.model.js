@@ -20,7 +20,7 @@ const model = {
       throw error;
     }
 
-    return db.add(entity, `customer`);
+    return await db.add(entity, `customer`);
   },
   update: async (entity, username) => {
     // if password

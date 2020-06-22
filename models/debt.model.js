@@ -11,7 +11,7 @@ const model = {
       return row;
     } catch (err) {
       throw err;
-    }
+    } 
   },
   allByPayer: async (payer) => {
     try {

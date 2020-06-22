@@ -42,6 +42,7 @@ app.use("/api/account", verify, require("./routes/account.route"));
 
 app.use("/api/partnerbank", require("./routes/partnerbank.route"));
 
+app.use("/api/admin", verify, require("./routes/admin.route"));
 app.use((req, res, next) => {
   res.status(404).send("NOT FOUND");
 });
@@ -56,6 +57,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, (_) => {
   console.log(`API is running at http://localhost:${PORT}`);
 });
-
 
 // rồi nè!
