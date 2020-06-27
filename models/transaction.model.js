@@ -48,11 +48,11 @@ const model = {
   getFilteredByTime: async (from, to) => {
     try {
       console.log(
-        `select * from transaction where timestamp > ${from} and timestamp < ${to}`
+        `select * from transaction where timestamp > ${from} and timestamp < ${to} and partner_bank != null`
       );
 
       const transactions = await db.load(
-        `select * from transaction where timestamp > "${from}" and timestamp < "${to}"`
+        `select * from transaction where timestamp > "${from}" and timestamp < "${to}"and partner_bank != ""`
       );
       return transactions;
     } catch (error) {
