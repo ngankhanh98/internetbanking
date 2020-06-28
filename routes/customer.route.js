@@ -424,7 +424,9 @@ router.get("/transactions/normal", async (req, res) => {
     const receivers = await transactionModel.getReceiverByAccNumber(
       account_number
     );
-    const result = { transfers, receivers };
+    const debts = await transactionModel.getDebtByAccNumber(account_number);
+
+    const result = { transfers, receivers, debts };
     res.status(200).json(result);
   } catch (err) {
     throw err;

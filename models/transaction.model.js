@@ -12,10 +12,19 @@ const model = {
       throw error;
     }
   },
-  getReceiverByAccNumber: async (acccount_number) => {
+  getReceiverByAccNumber: async (account_number) => {
     try {
       return await db.load(
-        `select * from transaction where receiver = "${acccount_number}" order by timestamp desc`
+        `select * from transaction where receiver = "${account_number}" order by timestamp desc`
+      );
+    } catch (error) {
+      throw error;
+    }
+  },
+  getDebtByAccNumber: async (account_number) => {
+    try {
+      return await db.load(
+        `select * from transaction where pay_debt <0 and( receiver = "${account_number}" or depositor= "${account_number}") order by timestamp desc`
       );
     } catch (error) {
       throw error;
@@ -39,11 +48,11 @@ const model = {
   getFilteredByTime: async (from, to) => {
     try {
       console.log(
-        `select * from transaction where timestamp > ${from} and timestamp < ${to}`
+        `select * from transaction where timestamp > ${from} and timestamp < ${to} and partner_bank != null`
       );
 
       const transactions = await db.load(
-        `select * from transaction where timestamp > "${from}" and timestamp < "${to}"`
+        `select * from transaction where timestamp > "${from}" and timestamp < "${to}"and partner_bank != ""`
       );
       return transactions;
     } catch (error) {
