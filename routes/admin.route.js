@@ -5,6 +5,17 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const transactionModel = require("../models/transaction.model");
 const moment = require("moment");
+router.get("/", async (req, res) => {
+  const token = req.headers["x-access-token"];
+  const { username } = jwt.decode(token);
+  console.log(username);
+  try {
+    const person = await personnelModel.getSingleByUsername(username);
+    res.status(200).json(person);
+  } catch (err) {
+    console.log("GET detail err ", err);
+  }
+});
 router.get("/personnel", async (req, res) => {
   const token = req.headers["x-access-token"];
   const { username } = jwt.decode(token);
