@@ -507,20 +507,20 @@ router.delete("/debts", async (req, res) => {
   try {
     const result = await debtModel.del(id);
     console.log(result);
-    res.status(204).json();
+    res.status(200).json(result);
   } catch (err) {
     throw new createError(400, error.message);
   }
 });
 
 router.post("/update-debts", async (req, res) => {
-  const { id } = req.body;
+  const debt = req.body;
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
   const { username } = decode;
 
   try {
-    const result = await debtModel.update(id);
+    const result = await debtModel.update(debt);
     res.status(200).json(result);
   } catch (error) {
     throw new createError(400, error.message);
