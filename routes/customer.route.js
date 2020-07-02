@@ -490,8 +490,9 @@ router.post("/debts", async (req, res) => {
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
   const { username } = decode;
+  const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  const debt = { ...req.body };
+  const debt = { ...req.body, timestamp };
   try {
     const result = await debtModel.add(debt);
     res.status(200).json(result);
