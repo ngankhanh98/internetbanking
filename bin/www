@@ -7,6 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('internetbanking:server');
 var http = require('http');
+const socketio = require('socket.io');
 
 /**
  * Get port from environment and store in Express.
@@ -88,3 +89,17 @@ function onListening() {
     : 'port ' + addr.port;
   debug('Listening on ' + bind);
 }
+
+
+/**
+ * Socket.io setup
+ */
+const io = socketio(server)
+
+io.on('connection', (socket) => {
+  console.log('New connection')
+
+  socket.on('disconnect', () => {
+    console.log('Lost connection')
+  })
+})
