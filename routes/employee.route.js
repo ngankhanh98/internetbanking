@@ -4,10 +4,11 @@ const accountModel = require("../models/account.model");
 const transactionModel = require('../models/transaction.model');
 const createError = require("https-error");
 const moment = require('moment');
+var crypto = require("crypto");
 const router = express.Router();
 
 const { bank } = require("../config/default.json");
-const { account_len } = bank;
+const { account_len, password_len } = bank;
 
 router.post("/add-customer", async (req, res) => {
   var { fullname, username } = req.body;
@@ -21,13 +22,22 @@ router.post("/add-customer", async (req, res) => {
     ...req_body,
     fullname: fullname, // Lê Long Đỉnh --> LE LONG DINH
   });
-  const entity = standarlize(req.body);
+  // const entity = standarlize(req.body);
+
+  // generate randomised password
+
+  const password = randomString(password_len);
+  console.log('password', password)
+
+  const entity = { ...standarlize(req.body), password };
+  console.log('entity', entity)
+
 
   // add customer to table `customer`
   try {
     const ret = await customerModel.add(entity);
     const confirmed_info = await customerModel.detail(username);
-    const info = { ...confirmed_info[0], password: null };
+    const info = { ...confirmed_info[0], password };
     result = { db: { ...ret }, customer: { ...info } };
   } catch (error) {
     throw new createError(401, error.message);
@@ -80,7 +90,7 @@ router.post("/intrabank-deposit", async (req, res) => {
   const isValidAccount = await accountModel.getByAccNumber(receiver)
   if (isValidAccount.length === 0)
     return res.status(401).json({ msg: "Account not existed" })
-    
+
   // ghi nhan giao dich
   var transactionId;
   try {
@@ -151,5 +161,7 @@ const randomAccountNum = () => {
   }
   return result;
 };
+
+const randomString = (length) => crypto.randomBytes(length).toString('hex');
 
 module.exports = router;
