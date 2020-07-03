@@ -27,8 +27,6 @@ router.post("/add-customer", async (req, res) => {
   // generate randomised password
 
   const password = randomString(password_len);
-  console.log('password', password)
-
   const entity = { ...standarlize(req.body), password };
   console.log('entity', entity)
 
@@ -162,6 +160,6 @@ const randomAccountNum = () => {
   return result;
 };
 
-const randomString = (length) => crypto.randomBytes(length).toString('hex');
+const randomString = (length) => crypto.randomBytes(length/2).toString('hex');
 
 module.exports = router;
