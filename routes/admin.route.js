@@ -5,6 +5,9 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 const transactionModel = require("../models/transaction.model");
 const moment = require("moment");
+const { sendPassword } = require("../middlewares/verify.mdw");
+const crypto = require("crypto");
+
 router.get("/", async (req, res) => {
   const token = req.headers["x-access-token"];
   const { username } = jwt.decode(token);
@@ -36,11 +39,17 @@ router.post("/personnel", async (req, res) => {
   try {
     await personnelModel.checkPermission("admin", username);
     let person = req.body;
+    const password = crypto.randomBytes(4).toString("hex");
+
+    const existUsr = await personnelModel.getSingleByUsername(person.username);
+    if (existUsr) throw new createError(400, "user name is exist");
     person.fullname = person.fullname
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toUpperCase();
+    person["password"] = password;
     const result = await personnelModel.add(person);
+    await sendPassword(person.username, password, person.email);
   } catch (err) {
     throw err;
   }
@@ -57,7 +66,9 @@ router.put("/personnel/:id", async (req, res) => {
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .toUpperCase();
-
+    if (newPerson.password) {
+      delete newPerson.password;
+    }
     const succeeded = await personnelModel.updateById(newPerson, req.params.id);
     if (succeeded) {
       res.sendStatus(200);
