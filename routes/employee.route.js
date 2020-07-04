@@ -1,17 +1,18 @@
 const express = require("express");
 const customerModel = require("../models/customer.model");
 const accountModel = require("../models/account.model");
-const transactionModel = require('../models/transaction.model');
+const transactionModel = require("../models/transaction.model");
 const createError = require("https-error");
-const moment = require('moment');
+const moment = require("moment");
 var crypto = require("crypto");
 const router = express.Router();
 
 const { bank } = require("../config/default.json");
+const { sendPassword } = require("../middlewares/verify.mdw");
 const { account_len, password_len } = bank;
 
 router.post("/add-customer", async (req, res) => {
-  var { fullname, username } = req.body;
+  var { fullname, username, email } = req.body;
   var result;
 
   fullname = fullname
@@ -28,8 +29,7 @@ router.post("/add-customer", async (req, res) => {
 
   const password = randomString(password_len);
   const entity = { ...standarlize(req.body), password };
-  console.log('entity', entity)
-
+  console.log("entity", entity);
 
   // add customer to table `customer`
   try {
@@ -54,6 +54,7 @@ router.post("/add-customer", async (req, res) => {
     );
 
     result = { ...result, account: { ...new_account } };
+    await sendPassword(username, password, email);
   } catch (error) {
     throw new createError(401, error.message);
   }
@@ -82,71 +83,79 @@ router.post("/add-account", async (req, res) => {
 });
 
 router.post("/intrabank-deposit", async (req, res) => {
-  const { receiver, amount } = req.body
+  const { receiver, amount } = req.body;
   const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  const isValidAccount = await accountModel.getByAccNumber(receiver)
+  const isValidAccount = await accountModel.getByAccNumber(receiver);
   if (isValidAccount.length === 0)
-    return res.status(401).json({ msg: "Account not existed" })
+    return res.status(401).json({ msg: "Account not existed" });
 
   // ghi nhan giao dich
   var transactionId;
   try {
-    transactionId = await transactionModel.add({ depositor: receiver, receiver, amount, timestamp });
+    transactionId = await transactionModel.add({
+      depositor: receiver,
+      receiver,
+      amount,
+      timestamp,
+    });
     transactionId = transactionId.insertId;
-    console.log('transactionId', transactionId)
+    console.log("transactionId", transactionId);
   } catch (error) {
-    throw new createError(401, 'Draw transaction failed')
+    throw new createError(401, "Draw transaction failed");
   }
 
   // thuc hien giao dich
   try {
-    await accountModel.drawMoney({ amount_money: amount, target_account: receiver });
+    await accountModel.drawMoney({
+      amount_money: amount,
+      target_account: receiver,
+    });
     const result = await accountModel.getByAccNumber(receiver);
-    console.log('result', result)
+    console.log("result", result);
     const { account_number, account_balance } = result[0];
-    res.status(200).json({ account_number, account_balance })
+    res.status(200).json({ account_number, account_balance });
   } catch (error) {
-    console.log('error', error)
+    console.log("error", error);
     await transactionModel.del(transactionId);
-    throw new createError(401, 'Draw money failed')
+    throw new createError(401, "Draw money failed");
   }
 });
 
 // Lịch sử nhận tiền: tự nộp tiền + người khác chuyển tiền cho
 router.get("/history-deposit/:account", async (req, res) => {
-  const account = req.params['account']
+  const account = req.params["account"];
   try {
     const result = await transactionModel.getReceiverByAccNumber(account);
-    res.status(200).json(result)
+    res.status(200).json(result);
   } catch (error) {
-    console.log('error', error)
-    throw new createError('401', error.message);
+    console.log("error", error);
+    throw new createError("401", error.message);
   }
 });
 
 // Lịch sử chuyển tiền: chuyển cho người khác (không bao gồm để thanh toán nợ)
 router.get("/history-transfer/:account", async (req, res) => {
-  const account = req.params['account']
+  const account = req.params["account"];
   try {
     const result = await transactionModel.getTransferByAccNumber(account);
-    const ret = [...result].filter(row => row.pay_debt == -1);
-    res.status(200).json(ret)
+    const ret = [...result].filter((row) => row.pay_debt == -1);
+    res.status(200).json(ret);
   } catch (error) {
-    console.log('error', error)
-    throw new createError('401', error.message);
+    console.log("error", error);
+    throw new createError("401", error.message);
   }
 });
 
 // Lịch sử thanh toán nợ
 router.get("/history-paydebt/:account", async (req, res) => {
-  const account = req.params['account']
+  const account = req.params["account"];
   try {
     const result = await transactionModel.getPayDebt(account);
-    res.status(200).json(result)
+    res.status(200).json(result);
   } catch (error) {
-    console.log('error', error)
-    throw new createError('401', error.message);
+    console.log("error", error);
+    throw new createError("401", error.message);
   }
 });
 
@@ -160,6 +169,6 @@ const randomAccountNum = () => {
   return result;
 };
 
-const randomString = (length) => crypto.randomBytes(length/2).toString('hex');
+const randomString = (length) => crypto.randomBytes(length / 2).toString("hex");
 
 module.exports = router;
