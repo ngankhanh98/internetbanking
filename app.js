@@ -53,9 +53,9 @@ app.use(function (err, req, res, next) {
   res.status(code).send(err.message);
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, (_) => {
-  console.log(`API is running at http://localhost:${PORT}`);
-});
+// const PORT = process.env.PORT || 3000;
+// app.listen(PORT, (_) => {
+//   console.log(`API is running at http://localhost:${PORT}`);
+// });
 
-// rồi nè!
+module.exports = app;
