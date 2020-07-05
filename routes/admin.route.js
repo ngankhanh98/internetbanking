@@ -93,24 +93,31 @@ router.delete("/personnel/:id", async (req, res) => {
   }
 });
 
-router.get("/transactions", async (req, res) => {
+router.get("/transactions/filter", async (req, res) => {
   const token = req.headers["x-access-token"];
   const { username } = jwt.decode(token);
+  const { from, to, bankCode } = req.query;
 
   try {
     await personnelModel.checkPermission("admin", username);
-    const bankCode = req.body.partner_bank;
+
     if (!bankCode) {
-      throw new createError(400, "Cant find partner bank");
+      const transactions = await transactionModel.getFilteredByTime(from, to);
+      return res.status(200).json(transactions);
     }
-    const transactions = await transactionModel.getAllByBankCode(bankCode);
-    res.status(200).json(transactions);
+    const transactions = await transactionModel.getFilteredByBankCode(
+      bankCode,
+      from,
+      to
+    );
+    //const transactions = await transactionModel.getAllByBankCode(bankCode);
+    return res.status(200).json(transactions);
   } catch (err) {
     throw err;
   }
 });
 
-router.get("/transactions/filter", async (req, res) => {
+router.get("/transactions", async (req, res) => {
   const token = req.headers["x-access-token"];
   const { username } = jwt.decode(token);
   const { from, to } = req.query;
