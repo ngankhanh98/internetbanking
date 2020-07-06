@@ -19,6 +19,7 @@
   "bank": {
     "transfer_fee": 4000,
     "account_len": 12,
-    "min_transfermoney": 20000
+    "min_transfermoney": 20000,
+    "password_len": 8
   }
 }

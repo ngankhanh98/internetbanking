@@ -37,7 +37,7 @@ module.exports = {
     try {
       console.log(secrect);
       const token = authenticator.generate(secrect);
-      mailOptions = {
+      const Options = {
         ...mailOptions,
         html:
           "<p>The email from nklbank</b><ul><li>Email:" +
@@ -48,7 +48,7 @@ module.exports = {
         to: email,
       };
 
-      const { error, info } = await transporter.sendMail(mailOptions);
+      const { error, info } = await transporter.sendMail(Options);
       if (error) throw error;
       return token;
     } catch (err) {
@@ -62,6 +62,25 @@ module.exports = {
       return isValid;
     } catch (err) {
       console.error(err);
+      throw err;
+    }
+  },
+
+  sendPassword: async (username, password, email) => {
+    const Options = {
+      ...mailOptions,
+      html:
+        "<p>The email from nklbank</b><ul><li>User:" +
+        username +
+        "</li><li>Your password:" +
+        password,
+      to: email,
+      subject: "Update password",
+    };
+    try {
+      const { error, info } = await transporter.sendMail(Options);
+      if (error) throw error;
+    } catch (err) {
       throw err;
     }
   },
