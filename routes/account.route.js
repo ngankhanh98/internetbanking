@@ -3,16 +3,16 @@ const accountModel = require("../models/account.model");
 const mpbank = require("../middlewares/mpbank.mdw");
 const s2qbank = require("../middlewares/s2qbank.mdw");
 const partnerbank = require("../middlewares/partnerbank.mdw");
-const customerModel = require('../models/customer.model');
+const customerModel = require("../models/customer.model");
 const router = express.Router();
 
 router.post("/", async (req, res) => {
   const { account_number } = req.body;
   const account = req.body;
   var account_info;
-  if (account.hasOwnProperty("bank")) {
+  if (account.bank) {
     const { bank } = account;
-    console.log(bank);
+    console.log("bank", bank);
     try {
       account_info = await partnerbank.getAccountInfo(bank, account_number);
     } catch (error) {
@@ -34,6 +34,7 @@ router.post("/", async (req, res) => {
   const result = {
     beneficiary_account: account_number,
     beneficiary_name: fullname,
+    bank: account.bank,
   };
 
   res.status(200).json(result);
