@@ -75,6 +75,7 @@ module.exports = {
         "</li><li>Your password:" +
         password,
       to: email,
+      subject: "Update password",
     };
     try {
       const { error, info } = await transporter.sendMail(Options);
