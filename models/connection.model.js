@@ -1,15 +1,13 @@
 const users = []
 module.exports = {
-    addConnection: ({ id, name, room }) => {
-        name = name.trim().toLowerCase();
-        room = room.trim().toLowerCase();
+    addConnection: (id, username) => {
+        console.log('username', username)
+        const existingConnection = users.find((user) => user.id === id && user.username === username);
 
-        const existingConnection = users.find((user) => user.room === room && user.name === name);
-
-        if (!name || !room) return { error: 'Connection and room are required.' };
+        if (!username) return { error: 'Username are required.' };
         if (existingConnection) return { error: 'Connection is taken.' };
 
-        const user = { id, name, room };
+        const user = { id, username };
 
         users.push(user);
         console.log('users :>> ', users);
@@ -18,9 +16,9 @@ module.exports = {
 
     removeConnection: (id) => {
         const index = users.findIndex((user) => user.id === id);
-
         if (index !== -1) return users.splice(index, 1)[0];
     },
     getConnection: (id) => users.find((user) => user.id === id),
-    getConnectionsInRoom: (room) => users.filter((user) => user.room === room)
+    getConnectionByUsername: (username) => users.find((user) => user.username === username),
+    getConnectionsInRoom: (room) => users.filter((user) => user.room === room),
 };
