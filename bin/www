@@ -7,7 +7,9 @@
 var app = require('../app');
 var debug = require('debug')('internetbanking:server');
 var http = require('http');
-const socketio = require('socket.io');
+
+const socketAPI = require('../middlewares/socketio');
+// const socketio = require('socket.io');
 
 /**
  * Get port from environment and store in Express.
@@ -21,6 +23,8 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+
+socketAPI.io.attach(server)
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -94,17 +98,18 @@ function onListening() {
 /**
  * Socket.io setup
  */
-const io = socketio(server)
+// const io = socketio(server)
 
-io.on('connection', (socket) => {
-  console.log('New connection')
+// io.on('connection', (socket) => {
 
-  socket.on('join', ({ username }) => {
-    console.log('username >>', username)
+//   console.log('New connection')
 
-  })
+//   socket.on('join', ({ username }) => {
+//     console.log('username >>', username)
 
-  socket.on('disconnect', () => {
-    console.log('Kill connection')
-  })
-})
+//   })
+
+//   socket.on('disconnect', () => {
+//     console.log('Kill connection')
+//   })
+// })
