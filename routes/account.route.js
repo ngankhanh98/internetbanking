@@ -30,8 +30,9 @@ router.post("/", async (req, res) => {
     }
   }
 
-  const { fullname } = account_info;
+  const { fullname, username } = account_info;
   const result = {
+    username,
     beneficiary_account: account_number,
     beneficiary_name: fullname,
     bank: account.bank,
