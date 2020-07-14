@@ -1,9 +1,10 @@
 const mysql = require('mysql');
 // const util = require('util');
-const { _mysql } = require("../config/default.json");
+const { _mysql, _mysql_2 } = require("../config/default.json");
 
 const createConnection = () => mysql.createConnection(_mysql);
 
+// const createConnection = () => mysql.createConnection(_mysql_2);
 
 module.exports = {
   load: (sql) => {
