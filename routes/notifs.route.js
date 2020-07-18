@@ -2,14 +2,16 @@ const express = require("express");
 const router = express.Router();
 
 const moment = require('moment');
+const jwt = require("jsonwebtoken");
 
 const notifsModel = require('../models/notifs.model');
 
 
-router.get('/:receiver', async (req, res) => {
-    const { receiver } = req.params;
+router.get('/:username', async (req, res) => {
+    const { username } = req.params
+    console.log('username', username)
     try {
-        const result = await notifsModel.getUnread(receiver)
+        const result = await notifsModel.getUnread(username)
         console.log('result', result)
         res.status(200).json(result)
     } catch (error) {
