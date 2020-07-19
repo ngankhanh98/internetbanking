@@ -25,8 +25,8 @@ router.post('/', async (req, res) => {
 
     try {
         const result = await notifsModel.add(newNotif)
-        console.log('result', result)
-        res.status(200).json(result)
+        const { insertId } = result;
+        res.status(200).json({ insertId, now })
     } catch (error) {
         throw error
     }
