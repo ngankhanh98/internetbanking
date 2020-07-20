@@ -172,9 +172,11 @@ router.post("/intrabank-transfer-money", async (req, res) => {
   const receivers = await accountModel.getByAccNumber(receiver);
 
   if (account_balance < amount) {
+    console.log("Account balance not enough")
     return res.status(403).json({ msg: "Account balance not enough" });
   }
   if (receivers.length === 0) {
+    console.log("Receiver account not found")
     return res.status(403).json({ msg: "Receiver account not found" });
   }
 
@@ -185,6 +187,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     transaction_id = ret.insertId;
     console.log(ret);
   } catch (error) {
+    console.log('error', error)
     return res.status(403).json({ msg: error });
   }
 
@@ -203,6 +206,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await accountModel.drawMoney(_depositor);
   } catch (error) {
     await transactionModel.del(transaction_id);
+    console.log('error', error)
     return res.status(403).json({ msg: error });
   }
 
@@ -212,6 +216,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await transactionModel.del(transaction_id); // delete transaction record
     const revert_depositor = { ..._depositor, transaction_type: "+" }; // revert depositor balance
     await accountModel.drawMoney(revert_depositor);
+    console.log('error', error)
     return res.status(403).json({ msg: error });
   }
   res.status(200).json({
