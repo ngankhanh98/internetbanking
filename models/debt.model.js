@@ -24,8 +24,9 @@ const model = {
   // update: async (id) => await db.update({ paid: true }, { id }, "debt"),
   update: async (debt) => {
     const { id } = debt;
-    await db.update(debt, { id }, "debt")
-  }
+    return await db.update(debt, { id }, "debt")
+  },
+  get: async (id) => await db.load(`select * from debt where id=${id}`)
 };
 
 module.exports = model;

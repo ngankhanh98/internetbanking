@@ -503,11 +503,13 @@ router.post("/debts", async (req, res) => {
 
 router.delete("/debts", async (req, res) => {
   const id = req.body.id;
-
   try {
-    const result = await debtModel.del(id);
-    console.log(result);
-    res.status(200).json(result);
+    const debt = await debtModel.get(id);
+    if (debt.length === 0)
+      res.status(400).json({ msg: "Debt not found" });
+
+    await debtModel.del(id);
+    res.status(200).json(debt[0]);
   } catch (err) {
     throw new createError(400, error.message);
   }
@@ -515,13 +517,24 @@ router.delete("/debts", async (req, res) => {
 
 router.post("/update-debts", async (req, res) => {
   const debt = req.body;
+  const { id } = debt
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
-  const { username } = decode;
+  // const { username } = decode;
+
+  let _debt
+  try {
+    _debt = await debtModel.get(id);
+    console.log('debt', debt)
+    if (debt.length === 0)
+      res.status(400).json({ msg: "Debt not found" });
+  } catch (error) {
+    throw new createError(400, error.message);
+  }
 
   try {
-    const result = await debtModel.update(debt);
-    res.status(200).json(result);
+    await debtModel.update(debt);
+    res.status(200).json(_debt[0]);
   } catch (error) {
     throw new createError(400, error.message);
   }
