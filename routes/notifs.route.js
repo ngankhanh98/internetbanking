@@ -13,7 +13,6 @@ router.get('/:username', async (req, res) => {
     try {
         // const result = await notifsModel.getUnread(username)
         const result = await notifsModel.getAll(username)
-        
         console.log('result', result)
         res.status(200).json(result)
     } catch (error) {
@@ -29,6 +28,17 @@ router.post('/', async (req, res) => {
         const result = await notifsModel.add(newNotif)
         const { insertId } = result;
         res.status(200).json({ insertId, now })
+    } catch (error) {
+        throw error
+    }
+})
+
+// update read notif
+router.post('/update', async (req, res) => {
+    const { id } = req.body
+    try {
+        const ret = await notifsModel.update(id, { unread: id })
+        res.status(200).json(ret)
     } catch (error) {
         throw error
     }
