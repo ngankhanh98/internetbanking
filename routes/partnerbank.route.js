@@ -42,17 +42,12 @@ router.post("/request", async (req, res) => {
     charge_include,
   } = data;
   const { partner_code, timestamp, api_signature } = req.headers;
-  const partner_bank = () => {
-    switch (partner_code) {
-      case "MtcwLbASeIXVnKurQCHrDCmsTEsBD7rQ44wHsEWjWtl8k":
-        return "MPB";
-      case "ccQ8SCo7jaJIsphleBkn":
-        return "S2Q Bank";
-      case "CryptoBank":
-        return "CryptoBank";
-    }
-  };
+  const partner_bank = (partner_code === "MtcwLbASeIXVnKurQCHrDCmsTEsBD7rQ44wHsEWjWtl8k" ? "MPB" : (partner_code === "ccQ8SCo7jaJIsphleBkn" ? "S2Q Bank" : "CryptoBank"))
   const _timestamp = new moment(timestamp);
+
+  console.log('💡 req.body :>> ', req.body);
+  console.log('💡 req.headers :>> ', req.headers);
+  console.log('💡 partner_bank :>> ', partner_bank);
 
   // What should be done:
   // 1. Check headers['timestamp']. All timestamps of n minutes ago are valid
@@ -65,14 +60,14 @@ router.post("/request", async (req, res) => {
   var now = new moment();
   var duration = moment.duration(now.diff(_timestamp)).asSeconds();
   if (duration > time_delay) {
-    res.status(401).json({ msg: "Request expired" });
-    throw new createError(401, "Request expired");
+    return res.status(401).json({ msg: "Request expired" });
+    // throw new createError(401, "❌ Request expired");
   }
 
   // 2. check headers['api_signature']
   var rows = await parnerbankModel.getByCode(partner_code); // get parner's secret_key, email from our database
   var { secret_key, email, publicKey } = rows[0];
-  console.log(JSON.stringify(publicKey));
+  console.log("💡 publicKey :>>", JSON.stringify(publicKey));
   var bytes = CryptoJS.AES.decrypt(api_signature, secret_key);
   var decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
 
@@ -80,8 +75,9 @@ router.post("/request", async (req, res) => {
   if (
     !isEqual(JSON.stringify(decryptedData.data.data), JSON.stringify(data.data))
   ) {
-    res.status(401).json({ msg: "Unoriginal package warning" });
-    throw new createError(401, "Unoriginal package warning");
+    console.log("❌ Unoriginal package warning");
+    return res.status(401).json({ msg: "Unoriginal package warning" });
+    // throw new createError(401, "❌ Unoriginal package warning");
   }
 
   // 2.1 If there's signature+data, verify it
@@ -92,43 +88,63 @@ router.post("/request", async (req, res) => {
         publicKeys: (await openpgp.key.readArmored(publicKey)).keys, // for verification
       });
       const { valid } = verified.signatures[0];
-      const keyid = verified.signatures[0].keyid.toHex();
-      console.log(valid, keyid);
+      // const keyid = verified.signatures[0].keyid.toHex();
 
       if (valid) {
         const keyid = verified.signatures[0].keyid.toHex();
-        console.log(keyid);
+        console.log('💡 keyid :>> ', keyid);
 
         // 3. Process transaction according to req.body.data with transaction_type = "+/-", relate to $
-        const isAccountValid = await accountModel.getByAccNumber(
-          data.target_account
-        );
-        if (isAccountValid.length === 0) {
-          res.status(403).json({ msg: "Cannot find such account" });
-          throw new createError(403, "Cannot find such account");
+        try {
+          const isAccountValid = await accountModel.getByAccNumber(data.target_account);
+          if (isAccountValid.length === 0) {
+            console.log("❌ Cannot find such account");
+            return res.status(403).json({ msg: "Cannot find such account" });
+            // throw new createError(403, "❌ Cannot find such account");
+          }
+        } catch (error) {
+          console.log(`❌ ${error}`);
+          return res.status(error.status).json(error);
+          //throw new createError(error.status, `❌ ${error.message}`);
         }
+
 
         // store transaction in table `partnerbank_transactions_log`
         // avoiding partner bank being a disclamer in the future
-        await interbankTransactionsLogModel.add({
-          keyID: keyid,
-          package: signed_data,
-          timestamp: _timestamp.format("YYYY-MM-DD HH:mm:ss"),
-        });
-        console.log(`🙏 write partnerbank_transactions_log succeed`);
+        try {
+          await interbankTransactionsLogModel.add({
+            keyID: keyid,
+            package: signed_data,
+            timestamp: _timestamp.format("YYYY-MM-DD HH:mm:ss"),
+          });
+          console.log(`🎉 Write 'partnerbank_transactions_log' succeed`);
+        } catch (error) {
+          console.log(`❌ ${error}`);
+          return res.status(error.status).json(error);
+          // throw new createError(error.status, `❌ ${error.message}`);
+        }
+
 
         // store transaction in table `transaction`
-        await transactionModel.add({
-          depositor: source_account,
-          receiver: target_account,
-          partner_bank: partner_bank,
-          amount: amount_money,
-          note,
-          charge_include,
-          timestamp: _timestamp.format("YYYY-MM-DD HH:mm:ss"),
-          keyID: keyid,
-        });
-        console.log(`🙏 write transaction succeed`);
+        try {
+          await transactionModel.add({
+            depositor: source_account,
+            receiver: target_account,
+            partner_bank,
+            amount: amount_money,
+            note,
+            charge_include,
+            timestamp: _timestamp.format("YYYY-MM-DD HH:mm:ss"),
+            keyID: keyid,
+          });
+          console.log(`🎉 Write 'transaction' succeed`);
+        } catch (error) {
+          console.log(`❌ ${error}`);
+
+          return res.status(error.status).json(error);
+          // throw new createError(error.status, `❌ ${error.message}`);
+        }
+
 
         // draw money
         try {
@@ -138,14 +154,18 @@ router.post("/request", async (req, res) => {
             ret: ret,
           };
           const sign = await signpgp.sign(info);
+          console.log('🎯 response :>> ', { info, sign });
           res.status(200).json({ info, sign });
         } catch (error) {
-          console.log(error);
-          throw new createError(error.status, error.message);
+          console.log(`❌ ${error}`);
+          // throw new createError(error.status, `❌ ${error.message}`);
+          return res.status(error.status).json(error);
+
         }
       } else {
-        res.status(401).json({ msg: "Signature could not be verified" });
-        throw new createError(401, "Signature could not be verified");
+        console.log("❌ Signature could not be verified");
+        return res.status(401).json({ msg: "Signature could not be verified" });
+        // throw new createError(401, "❌ Signature could not be verified");
       }
     })();
   }
@@ -157,10 +177,13 @@ router.post("/request", async (req, res) => {
     );
 
     if (rows.length === 0) {
-      res.status(401).json({ msg: "Cannot find such account" });
-      throw new createError(403, "Cannot find such account");
+      console.log("❌ Cannot find such account");
+      return res.status(401).json({ msg: "Cannot find such account" });
+      // throw new createError(403, "❌ Cannot find such account");
     }
     res.status(200).json(rows[0]);
+    console.log('🎯 response :>> ', rows[0]);
+
   }
 });
 module.exports = router;
