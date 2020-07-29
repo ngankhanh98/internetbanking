@@ -172,9 +172,11 @@ router.post("/intrabank-transfer-money", async (req, res) => {
   const receivers = await accountModel.getByAccNumber(receiver);
 
   if (account_balance < amount) {
+    console.log("Account balance not enough")
     return res.status(403).json({ msg: "Account balance not enough" });
   }
   if (receivers.length === 0) {
+    console.log("Receiver account not found")
     return res.status(403).json({ msg: "Receiver account not found" });
   }
 
@@ -185,6 +187,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     transaction_id = ret.insertId;
     console.log(ret);
   } catch (error) {
+    console.log('error', error)
     return res.status(403).json({ msg: error });
   }
 
@@ -203,6 +206,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await accountModel.drawMoney(_depositor);
   } catch (error) {
     await transactionModel.del(transaction_id);
+    console.log('error', error)
     return res.status(403).json({ msg: error });
   }
 
@@ -212,6 +216,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await transactionModel.del(transaction_id); // delete transaction record
     const revert_depositor = { ..._depositor, transaction_type: "+" }; // revert depositor balance
     await accountModel.drawMoney(revert_depositor);
+    console.log('error', error)
     return res.status(403).json({ msg: error });
   }
   res.status(200).json({
@@ -503,11 +508,13 @@ router.post("/debts", async (req, res) => {
 
 router.delete("/debts", async (req, res) => {
   const id = req.body.id;
-
   try {
-    const result = await debtModel.del(id);
-    console.log(result);
-    res.status(200).json(result);
+    const debt = await debtModel.get(id);
+    if (debt.length === 0)
+      res.status(400).json({ msg: "Debt not found" });
+
+    await debtModel.del(id);
+    res.status(200).json(debt[0]);
   } catch (err) {
     throw new createError(400, error.message);
   }
@@ -515,13 +522,24 @@ router.delete("/debts", async (req, res) => {
 
 router.post("/update-debts", async (req, res) => {
   const debt = req.body;
+  const { id } = debt
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
-  const { username } = decode;
+  // const { username } = decode;
+
+  let _debt
+  try {
+    _debt = await debtModel.get(id);
+    console.log('debt', debt)
+    if (debt.length === 0)
+      res.status(400).json({ msg: "Debt not found" });
+  } catch (error) {
+    throw new createError(400, error.message);
+  }
 
   try {
-    const result = await debtModel.update(debt);
-    res.status(200).json(result);
+    await debtModel.update(debt);
+    res.status(200).json(_debt[0]);
   } catch (error) {
     throw new createError(400, error.message);
   }
