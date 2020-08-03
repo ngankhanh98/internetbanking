@@ -500,7 +500,7 @@ router.post("/debts", async (req, res) => {
   const debt = { ...req.body, timestamp };
   try {
     const result = await debtModel.add(debt);
-    res.status(200).json(result);
+    res.status(200).json({ ...result, timestamp });
   } catch (error) {
     throw new createError(400, error.message);
   }
