@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-const jwt = require("jsonwebtoken");
 const createError = require("https-error");
 require("express-async-errors");
 
@@ -12,6 +11,7 @@ app.use(express.json());
 
 const router = express.Router();
 
+const { verify } = require('./middlewares/verify.mdw');
 app.use(
   "/",
   router.get("/", (req, res) => {
@@ -20,19 +20,6 @@ app.use(
 );
 
 app.use("/api/auth", require("./routes/auth.route"));
-function verify(req, res, next) {
-  const token = req.headers["x-access-token"];
-  if (token) {
-    jwt.verify(token, "secretKey", function (err, payload) {
-      if (err) throw new createError(401, err);
-
-      console.log(payload);
-      next();
-    });
-  } else {
-    throw new createError(401, "No access token found");
-  }
-}
 
 app.use("/", router);
 app.use("/api/customer", verify, require("./routes/customer.route"));
