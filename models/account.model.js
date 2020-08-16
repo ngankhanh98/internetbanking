@@ -11,10 +11,11 @@ module.exports = {
     return db.load(`select * from account where account_number = ${accnumber}`);
   },
   drawMoney: async (entity) => {
-    const { amount_money, target_account, transaction_type } = entity;
+    const { amount_money, target_account, transaction_type } = entity; 
     const _transaction_type = transaction_type || "+";
+    const amount = parseInt(amount_money);
     return await db.load(
-      `update account set account_balance = account_balance ${_transaction_type} ${amount_money} where account_number = ${target_account}`
+      `update account set account_balance = account_balance ${_transaction_type} ${amount} where account_number = ${target_account}`
     );
   },
   getCustomerInfoByAccNumber: (account_number) => {
