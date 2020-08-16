@@ -234,19 +234,20 @@ router.post("/interbank-transfer-money", async (req, res) => {
     charge_include,
   } = req.body;
   const fee = bank.transfer_fee;
-  const depositor_pay = charge_include ? amount + fee : amount;
-  const receiver_get = charge_include ? amount : amount - fee;
+  const _amount = parseInt(amount);
+  const depositor_pay = charge_include ? _amount + fee : amount;
+  const receiver_get = charge_include ? _amount : _amount - fee;
   const transaction = { ...req.body, amount: depositor_pay };
 
   // check if amount > min_transfermoney
-  if (amount < min_transfermoney)
+  if (_amount < min_transfermoney)
     return res
       .status(403)
       .json({ msg: `Transfer money less than minimun ${min_transfermoney}` });
   // check if depositor's balance > money to transfer
   const depositors = await accountModel.getByAccNumber(depositor);
   const { account_balance } = depositors[0];
-  if (account_balance < amount) {
+  if (account_balance < depositor_pay ) {
     return res.status(403).json({ msg: "Account balance not enough" });
   }
 
@@ -330,7 +331,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     transaction_id,
     depositor,
     receiver,
-    amount,
+    _amount,
     net_receiving: receiver_get,
     note,
     partner_bank,
