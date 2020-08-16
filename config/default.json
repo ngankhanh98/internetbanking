@@ -17,7 +17,7 @@
   },
   "auth": {
     "key": "secretKey",
-    "expiresIn": "30 days",
+    "expiresIn": "10m",
     "RFSZ": 80
   },
   "signature": {

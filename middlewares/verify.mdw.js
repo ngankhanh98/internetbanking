@@ -1,5 +1,5 @@
 const config = require("../config/default.json");
-
+const jwt = require("jsonwebtoken");
 const createError = require("https-error");
 const { authenticator } = require("otplib");
 const nodemailer = require("nodemailer");
@@ -23,7 +23,7 @@ module.exports = {
     const token = req.headers["x-access-token"];
     if (token) {
       jwt.verify(token, config.auth.key, function (err, payload) {
-        if (err) throw new createError(401, err);
+        if (err) throw new createError(405, err);
 
         console.log(payload);
         next();
