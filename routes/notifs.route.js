@@ -13,7 +13,7 @@ router.get('/:username', async (req, res) => {
     try {
         // const result = await notifsModel.getUnread(username)
         const result = await notifsModel.getAll(username)
-        console.log('result', result)
+       // console.log('result', result)
         res.status(200).json(result)
     } catch (error) {
         throw error
