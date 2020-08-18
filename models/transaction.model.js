@@ -3,10 +3,22 @@ const createError = require("https-error");
 const model = {
   add: async (transaction) => await db.add(transaction, "transaction"),
   del: async (id) => await db.del({ id: id }, "transaction"),
-  getTransferByAccNumber: async (acccount_number) => {
+  getTransferByAccNumber: async (account_number) => {
     try {
       return await db.load(
-        `select * from transaction where depositor = "${acccount_number}" and depositor!=receiver order by timestamp desc`
+        `select * from transaction where depositor = "${account_number}" and depositor!=receiver order by timestamp desc`
+      );
+    } catch (error) {
+      throw error;
+    }
+  },
+  getTransferByAccNumberDayLimit: async (account_number, endDay) => {
+    try {
+      console.log(
+        `select * from transaction where depositor = "${account_number}" and timestamp > "${endDay}" and depositor!=receiver order by timestamp desc`
+      );
+      return await db.load(
+        `select * from transaction where depositor = "${account_number}" and timestamp > "${endDay}" and depositor!=receiver order by timestamp desc`
       );
     } catch (error) {
       throw error;
@@ -16,6 +28,18 @@ const model = {
     try {
       return await db.load(
         `select * from transaction where receiver = "${account_number}" order by timestamp desc`
+      );
+    } catch (error) {
+      throw error;
+    }
+  },
+  getReceiverByAccNumberDayLimit: async (account_number, endDay) => {
+    try {
+      console.log(
+        `select * from transaction where receiver = "${account_number}" and timestamp > "${endDay}" order by timestamp desc`
+      );
+      return await db.load(
+        `select * from transaction where receiver = "${account_number}" and timestamp > "${endDay}" order by timestamp desc`
       );
     } catch (error) {
       throw error;
