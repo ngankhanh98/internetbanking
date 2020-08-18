@@ -6,7 +6,7 @@ const connectionModel = require('../models/connection.model');
 io.on('connection', (socket) => {
 
     console.log('New connection')
-    
+
     socket.on('join', ({ username }, callback) => {
         console.log('username ', username)
         const { user, error } = connectionModel.addConnection(socket.id, username);
@@ -19,11 +19,20 @@ io.on('connection', (socket) => {
         console.log('receiver', receiver)
         console.log('message', message)
 
-        const user = connectionModel.getConnectionByUsername(receiver);
-        if (user) {
-            const { id } = user
-            socket.to(id).emit('getNotif', { message })
-        }
+        // const user = connectionModel.getConnectionByUsername(receiver);
+        // if (user) {
+        //     const { id } = user
+        //     socket.to(id).emit('getNotif', { message })
+        // }
+
+        const users = connectionModel.getConnectionByUsername(receiver);
+        users.map(user => {
+            if (user) {
+                const { id } = user
+                socket.to(id).emit('getNotif', { message })
+            }
+        })
+
     })
 
 
