@@ -237,7 +237,9 @@ router.post("/interbank-transfer-money", async (req, res) => {
   const _amount = parseInt(amount);
   const depositor_pay = charge_include ? _amount + fee : amount;
   const receiver_get = charge_include ? _amount : _amount - fee;
-  const transaction = { ...req.body, amount: depositor_pay };
+  const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+  const transaction = { ...req.body, amount: depositor_pay, timestamp };
+
 
   // check if amount > min_transfermoney
   if (_amount < min_transfermoney)
