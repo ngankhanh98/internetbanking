@@ -1,5 +1,6 @@
 const db = require("../utils/db");
 const bcrypt = require("bcryptjs");
+const moment = require('moment');
 const createError = require("https-error");
 
 const model = {
@@ -76,6 +77,28 @@ const model = {
       default:
         throw new createError(500, "Failed to check permission");
     }
+  },
+
+  updateToken: async (username, refreshToken) => {
+    try {
+      await db.del({ username: username }, `personnelrefreshtokenext`);
+    } catch (error) {
+      throw new createError(402, error.message);
+    }
+
+    const entity = {
+      username: username,
+      refreshToken: refreshToken,
+      rdt: moment().format("YYYY-MM-DD HH:mm:ss"),
+    };
+    return await db.add(entity, `personnelrefreshtokenext`);
+  },
+  verifyRefreshToken: async (username, refreshToken) => {
+    const sql = `select * from personnelrefreshtokenext where username = "${username}" and refreshToken = "${refreshToken}"`;
+    const rows = await db.load(sql);
+    if (rows.length > 0) return true;
+
+    return false;
   },
 };
 

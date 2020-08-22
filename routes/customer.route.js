@@ -172,9 +172,11 @@ router.post("/intrabank-transfer-money", async (req, res) => {
   const receivers = await accountModel.getByAccNumber(receiver);
 
   if (account_balance < amount) {
+    console.log("Account balance not enough");
     return res.status(403).json({ msg: "Account balance not enough" });
   }
   if (receivers.length === 0) {
+    console.log("Receiver account not found");
     return res.status(403).json({ msg: "Receiver account not found" });
   }
 
@@ -185,6 +187,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     transaction_id = ret.insertId;
     console.log(ret);
   } catch (error) {
+    console.log("error", error);
     return res.status(403).json({ msg: error });
   }
 
@@ -203,6 +206,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await accountModel.drawMoney(_depositor);
   } catch (error) {
     await transactionModel.del(transaction_id);
+    console.log("error", error);
     return res.status(403).json({ msg: error });
   }
 
@@ -212,6 +216,7 @@ router.post("/intrabank-transfer-money", async (req, res) => {
     await transactionModel.del(transaction_id); // delete transaction record
     const revert_depositor = { ..._depositor, transaction_type: "+" }; // revert depositor balance
     await accountModel.drawMoney(revert_depositor);
+    console.log("error", error);
     return res.status(403).json({ msg: error });
   }
   res.status(200).json({
@@ -229,19 +234,22 @@ router.post("/interbank-transfer-money", async (req, res) => {
     charge_include,
   } = req.body;
   const fee = bank.transfer_fee;
-  const depositor_pay = charge_include ? amount + fee : amount;
-  const receiver_get = charge_include ? amount : amount - fee;
-  const transaction = { ...req.body, amount: depositor_pay };
+  const _amount = parseInt(amount);
+  const depositor_pay = charge_include ? _amount + fee : amount;
+  const receiver_get = charge_include ? _amount : _amount - fee;
+  const timestamp = moment().format("YYYY-MM-DD HH:mm:ss");
+  const transaction = { ...req.body, amount: depositor_pay, timestamp };
+
 
   // check if amount > min_transfermoney
-  if (amount < min_transfermoney)
+  if (_amount < min_transfermoney)
     return res
       .status(403)
       .json({ msg: `Transfer money less than minimun ${min_transfermoney}` });
   // check if depositor's balance > money to transfer
   const depositors = await accountModel.getByAccNumber(depositor);
   const { account_balance } = depositors[0];
-  if (account_balance < amount) {
+  if (account_balance < depositor_pay) {
     return res.status(403).json({ msg: "Account balance not enough" });
   }
 
@@ -325,7 +333,7 @@ router.post("/interbank-transfer-money", async (req, res) => {
     transaction_id,
     depositor,
     receiver,
-    amount,
+    _amount,
     net_receiving: receiver_get,
     note,
     partner_bank,
@@ -417,19 +425,25 @@ router.get("/transactions/receiver", async (req, res) => {
 });
 router.get("/transactions/normal", async (req, res) => {
   const account_number = req.query.account_number;
+  let endDay = new Date();
+  endDay.setDate(endDay.getDate() - 30);
+  const endDayStr = endDay.toISOString();
+  console.log(endDayStr);
   try {
-    const transfers = await transactionModel.getTransferByAccNumber(
-      account_number
+    const transfers = await transactionModel.getTransferByAccNumberDayLimit(
+      account_number,
+      endDayStr
     );
-    const receivers = await transactionModel.getReceiverByAccNumber(
-      account_number
+    const receivers = await transactionModel.getReceiverByAccNumberDayLimit(
+      account_number,
+      endDayStr
     );
     const debts = await transactionModel.getDebtByAccNumber(account_number);
 
     const result = { transfers, receivers, debts };
     res.status(200).json(result);
   } catch (err) {
-    throw err;
+    throw new createError(500, err);
   }
 });
 
@@ -495,7 +509,7 @@ router.post("/debts", async (req, res) => {
   const debt = { ...req.body, timestamp };
   try {
     const result = await debtModel.add(debt);
-    res.status(200).json(result);
+    res.status(200).json({ ...result, timestamp });
   } catch (error) {
     throw new createError(400, error.message);
   }
@@ -503,11 +517,12 @@ router.post("/debts", async (req, res) => {
 
 router.delete("/debts", async (req, res) => {
   const id = req.body.id;
-
   try {
-    const result = await debtModel.del(id);
-    console.log(result);
-    res.status(200).json(result);
+    const debt = await debtModel.get(id);
+    if (debt.length === 0) res.status(400).json({ msg: "Debt not found" });
+
+    await debtModel.del(id);
+    res.status(200).json(debt[0]);
   } catch (err) {
     throw new createError(400, error.message);
   }
@@ -515,13 +530,23 @@ router.delete("/debts", async (req, res) => {
 
 router.post("/update-debts", async (req, res) => {
   const debt = req.body;
+  const { id } = debt;
   const token = req.headers["x-access-token"];
   const decode = jwt.decode(token);
-  const { username } = decode;
+  // const { username } = decode;
+
+  let _debt;
+  try {
+    _debt = await debtModel.get(id);
+    console.log("debt", debt);
+    if (debt.length === 0) res.status(400).json({ msg: "Debt not found" });
+  } catch (error) {
+    throw new createError(400, error.message);
+  }
 
   try {
-    const result = await debtModel.update(debt);
-    res.status(200).json(result);
+    await debtModel.update(debt);
+    res.status(200).json(_debt[0]);
   } catch (error) {
     throw new createError(400, error.message);
   }
