@@ -17,13 +17,13 @@ router.post("/", async (req, res) => {
   // check wheter username existed
   const isUsernameValid = await customerModel.detail(entity.username);
   if (isUsernameValid.length === 0)
-    return res.status(403).send("Username not found");
+    return res.status(403).json("Username not found");
 
   // check password
   var result;
   try {
     result = await customerModel.login(entity);
-    if (!result) return res.status(403).send("Wrong password.");
+    if (!result) return res.status(403).json("Wrong password");
   } catch (error) {
     throw new createError(401, error.message);
   }

@@ -22,15 +22,18 @@ app.use(
 app.use("/api/auth", require("./routes/auth.route"));
 
 app.use("/", router);
-app.use("/api/customer", verify, require("./routes/customer.route"));
+// app.use("/api/customer", verify, require("./routes/customer.route"));
+app.use("/api/customer", require("./routes/customer.route"));
 app.use("/api/employee", require("./routes/employee.route"));
 
-app.use("/api/account", verify, require("./routes/account.route"));
+// app.use("/api/account", verify, require("./routes/account.route"));
+app.use("/api/account",  require("./routes/account.route"));
 app.use("/api/notifs", require('./routes/notifs.route'))
 
 app.use("/api/partnerbank", require("./routes/partnerbank.route"));
 
-app.use("/api/admin", verify, require("./routes/admin.route"));
+// app.use("/api/admin", verify, require("./routes/admin.route"));
+app.use("/api/admin",  require("./routes/admin.route"));
 
 
 
