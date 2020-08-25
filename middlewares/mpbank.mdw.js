@@ -1,6 +1,6 @@
 const express = require("express");
 const axios = require("axios");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const openpgp = require("openpgp");
 const createError = require("https-error");
 const config = require("../config/client.mpbank.json");
