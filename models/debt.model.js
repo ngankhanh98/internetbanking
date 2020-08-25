@@ -11,7 +11,7 @@ const model = {
       return row;
     } catch (err) {
       throw err;
-    } 
+    }
   },
   allByPayer: async (payer) => {
     try {
@@ -21,7 +21,12 @@ const model = {
       throw err;
     }
   },
-  update: async (id) => await db.update({ paid: true }, { id }, "debt"),
+  // update: async (id) => await db.update({ paid: true }, { id }, "debt"),
+  update: async (debt) => {
+    const { id } = debt;
+    return await db.update(debt, { id }, "debt")
+  },
+  get: async (id) => await db.load(`select * from debt where id=${id}`)
 };
 
 module.exports = model;
