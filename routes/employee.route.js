@@ -23,10 +23,8 @@ router.post("/add-customer", async (req, res) => {
     ...req_body,
     fullname: fullname, // Lê Long Đỉnh --> LE LONG DINH
   });
-  // const entity = standarlize(req.body);
 
   // generate randomised password
-
   const password = randomString(password_len);
   const entity = { ...standarlize(req.body), password };
   console.log("entity", entity);
@@ -46,6 +44,7 @@ router.post("/add-customer", async (req, res) => {
     account_number: randomAccountNum(),
     type: 0, // tai khoan thanh toan default
     customer_username: username,
+    open_date: moment().format("YYYY-MM-DD HH:mm:ss") 
   };
   try {
     const ret = await accountModel.add(account);
