@@ -1,5 +1,5 @@
 {
-  "_mysql": {
+  "_mysql_2": {
     "connectionLimit": 100,
     "host": "ebanking.cj3ogc5subyk.ap-southeast-1.rds.amazonaws.com",
     "port": 3306,
@@ -7,7 +7,7 @@
     "password": "20031998",
     "database": "ebanking"
   },
-  "_mysql_2": {
+  "_mysql_1": {
     "connectionLimit": 100,
     "host": "ebanking.ciintkz0qktb.ap-southeast-1.rds.amazonaws.com",
     "port": 3306,
@@ -15,9 +15,17 @@
     "password": "^4srwCZ33%9BQYDA",
     "database": "ebanking"
   },
+  "_mysql": {
+    "connectionLimit": 100,
+    "host": "localhost",
+    "port": 3306,
+    "user": "root",
+    "password": "root",
+    "database": "nklbank"
+  },
   "auth": {
     "key": "secretKey",
-    "expiresIn": "10m",
+    "expiresIn": "10 days",
     "RFSZ": 80
   },
   "signature": {

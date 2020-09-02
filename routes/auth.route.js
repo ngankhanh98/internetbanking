@@ -62,6 +62,8 @@ router.post("/personnel", async (req, res) => {
   const { RFSZ } = auth;
   const refreshToken = ranToken.generate(RFSZ);
 
+  await personnelModel.updateToken(req.body.username, refreshToken);
+
   res.status(200).json({
     accessToken: token,
     refreshToken,
@@ -82,10 +84,15 @@ router.post("/refresh", async (req, res) => {
   const decode = jwt.decode(req.body.accessToken);
   const { username } = decode;
   try {
-    const ret = await customerModel.verifyRefreshToken(
+    var ret = await customerModel.verifyRefreshToken(
       username,
       req.body.refreshToken
     );
+    if (ret === false)
+      ret = await personnelModel.verifyRefreshToken(
+        username,
+        req.body.refreshToken
+      );
     if (ret === false) throw new createError(402, "Invalid access token");
   } catch (error) {
     throw new createError(401, error.message);
