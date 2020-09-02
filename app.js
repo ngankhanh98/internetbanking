@@ -28,6 +28,7 @@ app.use("/api/employee", require("./routes/employee.route"));
 
 // app.use("/api/account", verify, require("./routes/account.route"));
 app.use("/api/account",  require("./routes/account.route"));
+app.use('/api/beneficiary', require('./routes/beneficiary.route'))
 app.use("/api/notifs", require('./routes/notifs.route'))
 
 app.use("/api/partnerbank", require("./routes/partnerbank.route"));
