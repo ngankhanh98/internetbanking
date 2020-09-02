@@ -12,6 +12,13 @@ const transactionModel = require("../models/transaction.model");
 
 const router = express.Router();
 
+router.get("/", async (req, res) => {
+  const ret = await parnerbankModel.all();
+  console.log("ret", ret);
+  // const entries = Object.fromEntries(ret);
+  res.status(200).json(ret);
+});
+
 router.post("/request", async (req, res) => {
   // req.body = {
   //   data = {
@@ -42,12 +49,17 @@ router.post("/request", async (req, res) => {
     charge_include,
   } = data;
   const { partner_code, timestamp, api_signature } = req.headers;
-  const partner_bank = (partner_code === "MtcwLbASeIXVnKurQCHrDCmsTEsBD7rQ44wHsEWjWtl8k" ? "MPB" : (partner_code === "ccQ8SCo7jaJIsphleBkn" ? "S2Q Bank" : "CryptoBank"))
+  const partner_bank =
+    partner_code === "MtcwLbASeIXVnKurQCHrDCmsTEsBD7rQ44wHsEWjWtl8k"
+      ? "MPB"
+      : partner_code === "ccQ8SCo7jaJIsphleBkn"
+      ? "S2Q Bank"
+      : "CryptoBank";
   const _timestamp = new moment(timestamp);
 
-  console.log('💡 req.body :>> ', req.body);
-  console.log('💡 req.headers :>> ', req.headers);
-  console.log('💡 partner_bank :>> ', partner_bank);
+  console.log("💡 req.body :>> ", req.body);
+  console.log("💡 req.headers :>> ", req.headers);
+  console.log("💡 partner_bank :>> ", partner_bank);
 
   // What should be done:
   // 1. Check headers['timestamp']. All timestamps of n minutes ago are valid
@@ -92,11 +104,13 @@ router.post("/request", async (req, res) => {
 
       if (valid) {
         const keyid = verified.signatures[0].keyid.toHex();
-        console.log('💡 keyid :>> ', keyid);
+        console.log("💡 keyid :>> ", keyid);
 
         // 3. Process transaction according to req.body.data with transaction_type = "+/-", relate to $
         try {
-          const isAccountValid = await accountModel.getByAccNumber(data.target_account);
+          const isAccountValid = await accountModel.getByAccNumber(
+            data.target_account
+          );
           if (isAccountValid.length === 0) {
             console.log("❌ Cannot find such account");
             return res.status(403).json({ msg: "Cannot find such account" });
@@ -107,7 +121,6 @@ router.post("/request", async (req, res) => {
           return res.status(error.status).json(error);
           //throw new createError(error.status, `❌ ${error.message}`);
         }
-
 
         // store transaction in table `partnerbank_transactions_log`
         // avoiding partner bank being a disclamer in the future
@@ -123,7 +136,6 @@ router.post("/request", async (req, res) => {
           return res.status(error.status).json(error);
           // throw new createError(error.status, `❌ ${error.message}`);
         }
-
 
         // store transaction in table `transaction`
         try {
@@ -145,7 +157,6 @@ router.post("/request", async (req, res) => {
           // throw new createError(error.status, `❌ ${error.message}`);
         }
 
-
         // draw money
         try {
           const ret = await accountModel.drawMoney(data);
@@ -154,13 +165,12 @@ router.post("/request", async (req, res) => {
             ret: ret,
           };
           const sign = await signpgp.sign(info);
-          console.log('🎯 response :>> ', { info, sign });
+          console.log("🎯 response :>> ", { info, sign });
           res.status(200).json({ info, sign });
         } catch (error) {
           console.log(`❌ ${error}`);
           // throw new createError(error.status, `❌ ${error.message}`);
           return res.status(error.status).json(error);
-
         }
       } else {
         console.log("❌ Signature could not be verified");
@@ -182,8 +192,7 @@ router.post("/request", async (req, res) => {
       // throw new createError(403, "❌ Cannot find such account");
     }
     res.status(200).json(rows[0]);
-    console.log('🎯 response :>> ', rows[0]);
-
+    console.log("🎯 response :>> ", rows[0]);
   }
 });
 module.exports = router;

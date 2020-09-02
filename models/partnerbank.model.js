@@ -4,7 +4,7 @@ const createError = require("https-error");
 const moment = require("moment");
 
 module.exports = {
-  all: () => db.load(`select * from partnerbank`),
+  all: () => db.load(`select name_bank from partnerbank`),
 
   getByID: async (id_bank) => {
     return await db.load(

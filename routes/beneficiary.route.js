@@ -3,6 +3,7 @@ const beneficiaryModel = require("../models/beneficiaries.model");
 const customerModel = require("../models/customer.model");
 const createError = require("https-error");
 const jwt = require("jsonwebtoken");
+const partnerbank = require("../middlewares/partnerbank.mdw");
 const router = express.Router();
 
 router.get("/", async (req, res) => {
